@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documentation — Muster</title>
+<meta name="description" content="Install, configure and run Muster, the self-hosted incident response playbook tool: deployment, roles, playbooks, incidents, report templates and the HTTP API.">
+<meta name="theme-color" content="#F2F3F0">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Instrument+Sans:wdth,wght@75..100,400..700&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="Muster home">
+      <svg viewBox="0 0 22 22" aria-hidden="true"><rect x="1" y="1" width="20" height="20" rx="5" fill="#121413"/><path d="M5.5 15.5 V7 L11 12 L16.5 7 V15.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="square"/><circle cx="11" cy="16" r="1.9" fill="#FF5A1F"/></svg>
+      Muster
+    </a>
+    <button class="menu-btn" aria-label="Menu" aria-expanded="false" aria-controls="nav">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 8h16M4 16h16"/></svg>
+    </button>
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="./#how">How it works</a>
+      <a href="./#playbooks">Playbooks</a>
+      <a href="./#features">Features</a>
+      <a href="docs.html" aria-current="page">Docs</a>
+      <a href="#" data-repo-link="">GitHub</a>
+    </nav>
+    <a class="btn sm cta" href="#quick-start">Quick start</a>
+  </div>
+</header>
+
+<div class="wrap docs">
+  <aside class="toc" aria-label="On this page">
+    <div class="groups">
+      <p>Start</p>
+      <a href="#quick-start">Quick start</a>
+      <a href="#demo">Demo accounts</a>
+      <a href="#tour">A short tour</a>
+      <p>Operate</p>
+      <a href="#production">Running it for real</a>
+      <a href="#configuration">Configuration</a>
+      <a href="#proxy">Reverse proxy</a>
+      <a href="#backups">Backups</a>
+      <a href="#roles">Roles</a>
+      <p>Use</p>
+      <a href="#playbooks">Playbooks</a>
+      <a href="#yaml">YAML format</a>
+      <a href="#incidents">Incidents</a>
+      <a href="#reports">Reports and templates</a>
+      <p>Build</p>
+      <a href="#api">HTTP API</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#development">Development</a>
+      <a href="#online">Online version</a>
+      <a href="#limits">Known limits</a>
+    </div>
+  </aside>
+
+  <main id="main" class="doc">
+    <p class="kicker"><b>DOCS</b><span class="phase" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span>Muster</p>
+    <h1 class="display">Documentation</h1>
+    <p class="lede">Muster is a self-hosted web app for security teams: draw incident response playbooks as diagrams, version them, run them step by step during an incident or an exercise, and produce the incident report as a PDF.</p>
+
+    <h2 id="quick-start">Quick start</h2>
+    <p><strong>With Docker</strong>, nothing else to install:</p>
+<pre><code><span data-repo-clone>git clone &lt;your-fork-url&gt;</span>
+cd muster
+docker compose up --build</code><button class="copy" aria-label="Copy commands"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button></pre>
+    <p><strong>With Node.js 22.13 or later</strong>:</p>
+<pre><code>npm install
+npm run demo</code><button class="copy" aria-label="Copy commands"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button></pre>
+    <p>Then open <code>http://localhost:8080</code> and click one of the demo accounts on the sign-in page.</p>
+
+    <h3 id="demo">Demo accounts</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>Account</th><th>Password</th><th>Can</th></tr></thead>
+      <tbody>
+        <tr><td><code>admin</code></td><td><code>muster-admin</code></td><td>everything, plus users and the audit log</td></tr>
+        <tr><td><code>editor</code></td><td><code>muster-editor</code></td><td>edit and publish playbooks, edit report templates</td></tr>
+        <tr><td><code>analyst</code></td><td><code>muster-analyst</code></td><td>declare incidents, run them, write reports</td></tr>
+        <tr><td><code>viewer</code></td><td><code>muster-viewer</code></td><td>read everything</td></tr>
+      </tbody>
+    </table></div>
+    <p>Demo mode also loads a closed incident with its report (IR-2026-041) and a tabletop exercise in progress, so every screen has content.</p>
+    <p>Demo data is disposable: when a new version of Muster changes it, a demo-mode server replaces the old demo database on start. A real install (<code>DEMO_MODE=false</code>) is never touched. To start the demo from scratch at any time, run <code>docker compose down -v</code> or delete the <code>data-demo</code> folder.</p>
+
+    <h3 id="tour">A short tour</h3>
+    <ol>
+      <li><strong>Playbooks</strong> lists the ten ready-made playbooks. Open <em>Ransomware</em>: it has three published versions and an unpublished change.</li>
+      <li>In the editor, select a step and press <kbd>A</kbd> to add an action after it, <kbd>D</kbd> for a decision, <kbd>E</kbd> for an escalation, <kbd>F</kbd> for an end. Drag the orange handle under a step onto another step to connect them. Drafts save automatically.</li>
+      <li><strong>History</strong> compares any two versions on the diagram and lists every change.</li>
+      <li><strong>Incidents → Declare an incident</strong>: choose <em>Exercise</em> and a clock speed of ×60 to see SLAs tick in minutes per second. Tick tasks, answer decisions, close the incident.</li>
+      <li><strong>Create incident report</strong>, edit the executive summary and your notes, then <strong>Download PDF</strong>.</li>
+      <li><strong>Reports → Templates</strong>: upload your logo, change the colour and the report ID pattern, rename, hide or reorder sections. The preview updates as you type.</li>
+    </ol>
+    <p>Open the app in two browsers with two accounts: incident progress, playbook changes and new reports appear live for everyone.</p>
+
+    <h2 id="production">Running it for real</h2>
+    <p>Set <code>DEMO_MODE=false</code>. On first start Muster creates one <code>admin</code> account: set <code>ADMIN_PASSWORD</code>, or read the generated password in the logs. Then add your team in <strong>Admin</strong>.</p>
+<pre><code><span class="c"># docker-compose.yml</span>
+services:
+  muster:
+    build: .
+    ports: ["8080:8080"]
+    environment:
+      DEMO_MODE: "false"
+      ADMIN_PASSWORD: "<span class="k">a-long-random-passphrase</span>"
+      COOKIE_SECURE: "true"     <span class="c"># served over HTTPS</span>
+      TRUST_PROXY: "true"       <span class="c"># behind a reverse proxy</span>
+    volumes:
+      - muster-data:/data
+    restart: unless-stopped
+volumes:
+  muster-data:</code></pre>
+    <div class="callout"><p>The ten default playbooks are a starting point. Review owners, SLAs and escalation contacts with your team before relying on them.</p></div>
+
+    <h3 id="configuration">Configuration</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>Variable</th><th>Default</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>PORT</code></td><td><code>8080</code></td><td>HTTP port</td></tr>
+        <tr><td><code>DATA_DIR</code></td><td><code>./data</code> (<code>/data</code> in Docker)</td><td>where the SQLite database lives. Back this folder up.</td></tr>
+        <tr><td><code>DEMO_MODE</code></td><td><code>false</code> (<code>true</code> in the compose file)</td><td>demo accounts and sample data on first start</td></tr>
+        <tr><td><code>ADMIN_PASSWORD</code></td><td>random</td><td>password of the first admin when demo mode is off</td></tr>
+        <tr><td><code>COOKIE_SECURE</code></td><td><code>false</code></td><td>set to <code>true</code> when served over HTTPS</td></tr>
+        <tr><td><code>TRUST_PROXY</code></td><td><code>false</code></td><td>set to <code>true</code> behind a reverse proxy, to log real client IPs</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3 id="proxy">Reverse proxy</h3>
+    <p>Put Muster behind a reverse proxy that terminates TLS (nginx, Caddy, Traefik). Live updates use server-sent events on <code>/api/events</code>: disable response buffering there if your proxy buffers.</p>
+<pre><code><span class="c"># nginx</span>
+location / {
+  proxy_pass http://127.0.0.1:8080;
+  proxy_set_header Host $host;
+  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  proxy_set_header X-Forwarded-Proto $scheme;
+}
+location /api/events {
+  proxy_pass http://127.0.0.1:8080;
+  proxy_buffering off;
+  proxy_read_timeout 1h;
+}</code></pre>
+<pre><code><span class="c"># Caddy: streams SSE without extra settings</span>
+muster.example.org {
+  reverse_proxy 127.0.0.1:8080
+}</code></pre>
+
+    <h3 id="backups">Backups</h3>
+    <p>Everything lives in one SQLite database in <code>DATA_DIR</code>. Copy the folder with the container stopped, or take a hot backup:</p>
+<pre><code>sqlite3 /data/muster.db ".backup /backups/muster-$(date +%F).db"</code></pre>
+
+    <h3 id="roles">Roles</h3>
+    <p>Roles are cumulative: each one can do everything the one before it can. They are checked on every API endpoint, not only in the interface.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Action</th><th>Viewer</th><th>Analyst</th><th>Editor</th><th>Admin</th></tr></thead>
+      <tbody>
+        <tr><td>Read playbooks, incidents, reports, templates</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+        <tr><td>Declare and run incidents and exercises</td><td class="no">—</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+        <tr><td>Create and edit reports</td><td class="no">—</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+        <tr><td>Edit, publish and restore playbooks</td><td class="no">—</td><td class="no">—</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+        <tr><td>Edit report templates</td><td class="no">—</td><td class="no">—</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+        <tr><td>Archive playbooks, delete reports</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">Yes</td></tr>
+        <tr><td>Manage users, read the audit log</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">Yes</td></tr>
+      </tbody>
+    </table></div>
+    <p>The last active admin can't be demoted or disabled. Changing someone's role or disabling them ends their sessions.</p>
+
+    <h2 id="playbooks">Playbooks</h2>
+    <p>A playbook is a graph of steps. Each step has a type, an owner, an SLA in minutes, a NIST phase (Detection, Containment, Eradication, Recovery, Lessons learned), instructions and a checklist.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Step</th><th>Key</th><th>Drawn as</th><th>Use it for</th></tr></thead>
+      <tbody>
+        <tr><td>Action</td><td><kbd>A</kbd></td><td>white card</td><td>something to do, with its checklist</td></tr>
+        <tr><td>Decision</td><td><kbd>D</kbd></td><td>black hexagon</td><td>a question; each answer is a labelled connection</td></tr>
+        <tr><td>Escalation</td><td><kbd>E</kbd></td><td>red card</td><td>handing over: crisis cell, CISO, legal</td></tr>
+        <tr><td>End</td><td><kbd>F</kbd></td><td>stadium</td><td>closing the incident</td></tr>
+      </tbody>
+    </table></div>
+    <p>Editor shortcuts: <kbd>Ctrl</kbd> <kbd>Z</kbd> undo, <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>Z</kbd> or <kbd>Ctrl</kbd> <kbd>Y</kbd> redo, <kbd>Ctrl</kbd> <kbd>S</kbd> save, <kbd>Delete</kbd> remove the selection, <kbd>Esc</kbd> deselect.</p>
+    <h3>Validation</h3>
+    <p>Publishing is blocked while the playbook has errors: no start or more than one, no end, a step that can't be reached from the start, a dead end, a decision with a single answer. Missing owners, SLAs or answer labels are warnings.</p>
+    <h3>Versions</h3>
+    <p>Each playbook has one shared draft and immutable published versions with a message and an author. If two editors save the draft at the same time, the second is told and nothing is overwritten. <strong>History</strong> compares any two versions on the diagram (added, changed, removed) and lists every change field by field; <strong>Restore</strong> copies an old version into the draft. Every incident stores a frozen copy of the version it runs on, so later edits never change a past incident.</p>
+
+    <h3 id="yaml">YAML format</h3>
+    <p>Every playbook exports to YAML (<code>GET /api/playbooks/:id/yaml</code>, or the YAML button in the editor). An excerpt of PB-002:</p>
+<pre><code><span class="c"># PB-002 Phishing email — draft (live: v1)</span>
+playbook: "Phishing email"
+id: PB-002
+category: "Phishing"
+schema: muster/v1
+steps:
+  - id: analyse
+    type: action
+    title: "Analyse the email"
+    phase: "Detection"
+    owner: "L1 Analyst"
+    sla_minutes: 20
+    checklist:
+      - "Extract headers and URLs"
+      - "Detonate attachments in the sandbox"
+      - "Find every other recipient"
+    next:
+      - to: malicious
+  - id: malicious
+    type: decision
+    title: "Is the email malicious?"
+    next:
+      - to: purge
+        when: "Yes"
+      - to: benign
+        when: "No"</code></pre>
+
+    <h2 id="incidents">Incidents</h2>
+    <p>Declare an <strong>incident</strong> (real time) or an <strong>exercise</strong> (tabletop, with a faster clock: ×1, ×10, ×60 or ×300). Pick the playbook, the version and the severity. Muster then shows one step at a time:</p>
+    <ul>
+      <li>the phase rail across the top and the elapsed time;</li>
+      <li>the step's SLA bar, its instructions and checklist;</li>
+      <li>decisions as questions, with one button per answer;</li>
+      <li>the route on the frozen diagram, the timestamped timeline, and the analyst notes that go into the report.</li>
+    </ul>
+    <p>Everything anyone does is pushed live to everyone else looking at the incident. <strong>Stop response</strong> ends it early and records that in the timeline.</p>
+
+    <h2 id="reports">Reports and templates</h2>
+    <p>When an incident is closed, <strong>Create incident report</strong> drafts it from the run: executive summary, timeline, SLA performance (met or missed per step), key decisions, analyst notes and sign-off. Edit any text, then download the PDF or export Markdown. The PDF is rendered on the server from the same data and template as the preview.</p>
+    <h3>Templates</h3>
+    <p>Editors manage templates in <strong>Reports → Templates</strong>: organisation name, logo, accent colour (with a contrast check and a one-click fix), classification label, footer, and the sections: rename, hide, reorder. One template is the default.</p>
+    <h3>Report ID pattern</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>Token</th><th>Becomes</th></tr></thead>
+      <tbody>
+        <tr><td><code>{YYYY}</code></td><td>year, e.g. 2026</td></tr>
+        <tr><td><code>{YY}</code> <code>{MM}</code> <code>{DD}</code></td><td>two-digit year, month, day</td></tr>
+        <tr><td><code>{YYMMDD}</code></td><td>261024</td></tr>
+        <tr><td><code>{SEQ}</code></td><td>the template's counter, zero-padded to the width you set</td></tr>
+        <tr><td><code>{PB}</code></td><td>the playbook code, e.g. PB-001</td></tr>
+      </tbody>
+    </table></div>
+    <p><code>IR-{YYYY}-{SEQ}</code> gives <code>IR-2026-042</code>; <code>{PB}-REG-{YYMMDD}-{SEQ}</code> gives <code>PB-005-REG-261024-007</code>.</p>
+
+    <h2 id="api">HTTP API</h2>
+    <p>The interface uses a plain JSON API, which you can call too. Sign in with <code>POST /api/auth/login</code>; the session is a cookie. Every write must carry the header <code>X-Muster: 1</code> (CSRF protection).</p>
+<pre><code>curl -c jar -H 'X-Muster: 1' -H 'Content-Type: application/json' \
+  -d '{"username":"analyst","password":"muster-analyst"}' \
+  http://localhost:8080/api/auth/login
+curl -b jar http://localhost:8080/api/incidents</code></pre>
+    <div class="tbl"><table>
+      <thead><tr><th>Method</th><th>Path</th><th>Role</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td><span class="method get">GET</span></td><td><code>/api/health</code></td><td>—</td><td>liveness check</td></tr>
+        <tr><td><span class="method post">POST</span></td><td><code>/api/auth/login</code> · <code>/logout</code></td><td>—</td><td>open or close a session</td></tr>
+        <tr><td><span class="method get">GET</span></td><td><code>/api/auth/me</code></td><td>—</td><td>the signed-in user, or null</td></tr>
+        <tr><td><span class="method post">POST</span></td><td><code>/api/auth/password</code></td><td>viewer</td><td>change your password</td></tr>
+        <tr><td><span class="method get">GET</span></td><td><code>/api/events</code></td><td>viewer</td><td>server-sent events stream of changes</td></tr>
+        <tr><td><span class="method get">GET</span></td><td><code>/api/playbooks</code> · <code>/:id</code> · <code>/:id/yaml</code></td><td>viewer</td><td>list, read, export</td></tr>
+        <tr><td><span class="method post">POST</span></td><td><code>/api/playbooks</code></td><td>editor</td><td>create, or duplicate one</td></tr>
+        <tr><td><span class="method patch">PATCH</span></td><td><code>/api/playbooks/:id</code></td><td>editor</td><td>name, category, severity, description</td></tr>
+        <tr><td><span class="method put">PUT</span></td><td><code>/api/playbooks/:id/draft</code></td><td>editor</td><td>save the draft (with conflict detection)</td></tr>
+        <tr><td><span class="method post">POST</span></td><td><code>/api/playbooks/:id/publish</code> · <code>/restore</code></td><td>editor</td><td>publish a version, restore one into the draft</td></tr>
+        <tr><td><span class="method delete">DELETE</span></td><td><code>/api/playbooks/:id</code></td><td>admin</td><td>archive</td></tr>
+        <tr><td><span class="method get">GET</span></td><td><code>/api/incidents</code> · <code>/:id</code></td><td>viewer</td><td>list, read</td></tr>
+        <tr><td><span class="method post">POST</span></td><td><code>/api/incidents</code></td><td>analyst</td><td>declare an incident or start an exercise</td></tr>
+        <tr><td><span class="method post">POST</span></td><td><code>/api/incidents/:id/advance</code> · <code>/tasks</code> · <code>/notes</code> · <code>/meta</code> · <code>/speed</code> · <code>/stop</code></td><td>analyst</td><td>move on, tick tasks, notes, name and severity, clock speed, stop</td></tr>
+        <tr><td><span class="method post">POST</span></td><td><code>/api/incidents/:id/report</code></td><td>analyst</td><td>create the report</td></tr>
+        <tr><td><span class="method get">GET</span></td><td><code>/api/reports</code> · <code>/:id</code> · <code>/:id/pdf</code> · <code>/:id/markdown</code></td><td>viewer</td><td>list, read, export</td></tr>
+        <tr><td><span class="method patch">PATCH</span></td><td><code>/api/reports/:id</code></td><td>analyst</td><td>edit the ID, severity, summary, notes or template; refresh from the incident</td></tr>
+        <tr><td><span class="method delete">DELETE</span></td><td><code>/api/reports/:id</code></td><td>admin</td><td>delete</td></tr>
+        <tr><td><span class="method get">GET</span></td><td><code>/api/templates</code></td><td>viewer</td><td>list templates</td></tr>
+        <tr><td><span class="method post">POST</span></td><td><code>/api/templates</code> · <code>/:id/default</code></td><td>editor</td><td>create, make default</td></tr>
+        <tr><td><span class="method put">PUT</span></td><td><code>/api/templates/:id</code></td><td>editor</td><td>update</td></tr>
+        <tr><td><span class="method delete">DELETE</span></td><td><code>/api/templates/:id</code></td><td>editor</td><td>delete</td></tr>
+        <tr><td><span class="method get">GET</span></td><td><code>/api/users</code> · <code>/api/audit</code></td><td>admin</td><td>accounts, audit log</td></tr>
+        <tr><td><span class="method post">POST</span></td><td><code>/api/users</code></td><td>admin</td><td>create an account</td></tr>
+        <tr><td><span class="method patch">PATCH</span></td><td><code>/api/users/:id</code></td><td>admin</td><td>role, name, disable</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2 id="architecture">Architecture</h2>
+<pre><code>packages/core   shared TypeScript: types, the 10 playbooks, validation, diffs,
+                incident engine, report data
+packages/pdf    report → PDF (pdf-lib), shared by the server and the online build
+apps/api        Node.js HTTP API: SQLite storage, accounts and roles, live updates
+apps/web        React interface
+scripts/        build (esbuild) and demo launcher
+tests/          API tests (node:test) and a browser walk-through (Playwright)</code></pre>
+    <ul>
+      <li><strong>No framework, few dependencies.</strong> The API uses Node's built-in <code>http</code> and <code>node:sqlite</code>; the only runtime dependency is <code>pdf-lib</code>, bundled into <code>dist/server.js</code>. The Docker image needs no <code>node_modules</code>.</li>
+      <li><strong>Storage</strong> is isolated in <code>apps/api/src/db.ts</code> and <code>repo.ts</code>. Moving to PostgreSQL means rewriting those two files.</li>
+      <li><strong>Security:</strong> scrypt password hashing, HttpOnly SameSite session cookies, the <code>X-Muster</code> header on every write, login rate limiting, a strict Content-Security-Policy, role checks on every endpoint and an audit log.</li>
+    </ul>
+
+    <h2 id="development">Development</h2>
+<pre><code>npm run dev          <span class="c"># rebuilds on change; run `npm start` in another terminal</span>
+npm test             <span class="c"># API tests</span>
+npm run test:e2e     <span class="c"># browser walk-through, screenshots in tests/screens</span>
+npm run typecheck</code></pre>
+    <p>The browser walk-through needs Chromium once: <code>npx playwright install chromium</code>.</p>
+    <h3>This site</h3>
+    <p>The site lives in <code>site/</code> and is published by <code>.github/workflows/pages.yml</code> on every push to <code>main</code>. In the repository settings, set <strong>Pages → Source</strong> to <em>GitHub Actions</em>. The hero film is rendered from code in <code>hero-film/</code> using real screens of the app.</p>
+
+    <h2 id="online">Online version</h2>
+    <p><code>npm run build:online</code> produces <code>dist-online/muster.html</code>, a single page that runs the same interface without a server, as a Claude artifact: data lives in the page's shared storage, people sign in with their Claude account, and the share menu sets roles (Editor edits playbooks and templates, Contributor runs incidents and writes reports, Viewer reads). <code>npm run test:online</code> checks it in a browser against a stand-in for that runtime.</p>
+
+    <h2 id="limits">Known limits</h2>
+    <ul>
+      <li>Accounts are local. SSO (OIDC, SAML) is not built in yet.</li>
+      <li>SQLite suits a single server and a team-sized load. For high availability, move the storage layer to PostgreSQL.</li>
+      <li>PDF text uses the standard Helvetica and Courier fonts, which cover Western European languages. Other scripts are dropped from the PDF; the on-screen report shows them.</li>
+    </ul>
+  </main>
+</div>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="Muster home" style="font-size:17px">
+      <svg viewBox="0 0 22 22" aria-hidden="true" style="width:22px;height:22px"><rect x="1" y="1" width="20" height="20" rx="5" fill="#121413"/><path d="M5.5 15.5 V7 L11 12 L16.5 7 V15.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="square"/><circle cx="11" cy="16" r="1.9" fill="#FF5A1F"/></svg>
+      Muster
+    </a>
+    <span>Incident response playbooks, drawn, versioned and run live.</span>
+    <nav aria-label="Footer"><a href="./">Home</a><a href="#api">API</a><a href="#" data-repo-link="">GitHub</a></nav>
+  </div>
+</footer>
+<script src="assets/site.js" type="module"></script>
+</body>
+</html>

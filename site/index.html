@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Muster — Incident response playbooks, drawn, versioned and run live</title>
+<meta name="description" content="Muster is a self-hosted tool for security teams: draw incident response playbooks as diagrams, version them, run them step by step during an incident and generate the report as a PDF.">
+<meta name="theme-color" content="#F2F3F0">
+<meta property="og:title" content="Muster — Know the next step before the incident">
+<meta property="og:description" content="Draw incident response playbooks, version them, run them live with SLAs, and get the incident report as a PDF. Self-hosted.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="media/poster.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Instrument+Sans:wdth,wght@75..100,400..700&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="preload" as="image" href="media/poster.jpg">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="Muster home">
+      <svg viewBox="0 0 22 22" aria-hidden="true"><rect x="1" y="1" width="20" height="20" rx="5" fill="#121413"/><path d="M5.5 15.5 V7 L11 12 L16.5 7 V15.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="square"/><circle cx="11" cy="16" r="1.9" fill="#FF5A1F"/></svg>
+      Muster
+    </a>
+    <button class="menu-btn" aria-label="Menu" aria-expanded="false" aria-controls="nav">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 8h16M4 16h16"/></svg>
+    </button>
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="#how">How it works</a>
+      <a href="#playbooks">Playbooks</a>
+      <a href="#features">Features</a>
+      <a href="docs.html">Docs</a>
+      <a href="#" data-repo-link="">GitHub</a>
+    </nav>
+    <a class="btn sm cta" href="#start">Get started</a>
+  </div>
+</header>
+
+<main id="main">
+  <!-- ============ hero ============ -->
+  <div class="hero">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div>
+          <p class="kicker"><b>00</b><span class="phase" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i><i></i></span>Incident response playbooks</p>
+          <h1 class="display">Know the next step <em>before</em> the incident.</h1>
+        </div>
+        <div>
+          <p class="lede">Draw your playbooks as diagrams, version them like code, run them step by step when it happens, and get the incident report as a PDF. Self-hosted, for security teams.</p>
+          <div class="actions">
+            <a class="btn" href="#start">Run the demo
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            <a class="btn ghost" href="docs.html">Read the docs</a>
+          </div>
+          <div class="cmd" aria-label="Start the demo with Docker">
+            <span aria-hidden="true">$</span><code>docker compose up --build</code>
+            <button class="copy" aria-label="Copy command"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button>
+          </div>
+        </div>
+      </div>
+
+      <figure class="film" aria-label="A 20-second film of Muster: an alert, the playbook, the live run, the decision, the timeline and the report">
+        <div class="film-frame">
+          <video autoplay muted loop playsinline preload="auto" poster="media/poster.jpg" aria-describedby="film-desc">
+            <source src="media/muster-hero.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="film-bar">
+          <p class="kicker" id="film-desc">20 s · every frame is the real product</p>
+          <div class="film-ctrl">
+            <button class="icon-btn" data-film="play" aria-pressed="false" aria-label="Pause the film">
+              <svg class="when-off" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+              <svg class="when-on" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5v14l12-7z"/></svg>
+            </button>
+            <button class="icon-btn" data-film="sound" aria-pressed="false" aria-label="Turn sound on">
+              <svg class="when-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m22 9-6 6M16 9l6 6"/></svg>
+              <svg class="when-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+            </button>
+          </div>
+        </div>
+      </figure>
+    </div>
+
+    <div class="facts">
+      <div class="wrap">
+        <ul>
+          <li><strong>10</strong><span>playbooks ready on day one, mapped to the NIST phases</span></li>
+          <li><strong>4 roles</strong><span>viewer, analyst, editor, admin — checked on every endpoint</span></li>
+          <li><strong>1 file</strong><span>to back up: a SQLite database in your data folder</span></li>
+          <li><strong>pdf-lib</strong><span>the only runtime dependency. Node 22 or a Docker image</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ how it works ============ -->
+  <section id="how" aria-labelledby="how-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2 class="display" id="how-h">From the diagram<br>to the report.</h2>
+        <p>The playbook you draw is the one that runs. The run is what the report is made of. Nobody retypes anything at 3 a.m.</p>
+      </div>
+
+      <div class="steps">
+        <article class="step">
+          <div class="step-text rise">
+            <p class="step-num">01 — Draw</p>
+            <h3>Playbooks as diagrams, not documents.</h3>
+            <p>Actions, decisions and escalations on a canvas that arranges itself. Every step has an owner, an SLA, a NIST phase and a checklist.</p>
+            <ul>
+              <li>Keyboard-first: <kbd>A</kbd> action, <kbd>D</kbd> decision, <kbd>E</kbd> escalation, <kbd>F</kbd> end</li>
+              <li>Drag a handle onto a step to connect it; undo, redo, auto-arrange</li>
+              <li>Validation before publishing: dead ends, unreachable steps, missing owners</li>
+            </ul>
+          </div>
+          <figure class="rise">
+            <div class="shot"><img src="img/editor.webp" srcset="img/editor-sm.webp 1120w, img/editor.webp 2240w" sizes="(max-width: 860px) 100vw, 66vw" width="2240" height="1400" alt="The playbook editor: the Ransomware playbook as a flowchart, with the step Isolate affected hosts selected and its owner, SLA and checklist in the inspector" loading="lazy"></div>
+            <figcaption>Editor · PB-001 Ransomware, step S03 selected</figcaption>
+          </figure>
+        </article>
+
+        <article class="step">
+          <div class="step-text rise">
+            <p class="step-num">02 — Version</p>
+            <h3>Every change reviewed, every run frozen.</h3>
+            <p>One shared draft, immutable published versions. Compare any two on the diagram itself: added, changed and removed steps, field by field.</p>
+            <ul>
+              <li>Conflict detection when two editors save at once</li>
+              <li>Restore an old version into the draft in one click</li>
+              <li>Each incident keeps a frozen copy of the version it ran on</li>
+            </ul>
+          </div>
+          <figure class="rise">
+            <div class="shot"><img src="img/history.webp" srcset="img/history-sm.webp 1120w, img/history.webp 2240w" sizes="(max-width: 860px) 100vw, 66vw" width="2240" height="1400" alt="Version history: v1 compared with v2, the diff drawn on the diagram and nine listed changes" loading="lazy"></div>
+            <figcaption>History · v1 → v2: 6 added, 1 changed, 2 removed</figcaption>
+          </figure>
+        </article>
+
+        <article class="step">
+          <div class="step-text rise">
+            <p class="step-num">03 — Run</p>
+            <h3>The playbook runs the incident with you.</h3>
+            <p>Declare an incident or a tabletop exercise. Muster shows one step at a time, its tasks and its SLA clock, and asks the decisions as questions.</p>
+            <ul>
+              <li>Phase rail, elapsed time and SLA per step</li>
+              <li>Every tick, answer and note goes into a timestamped timeline</li>
+              <li>Live for the whole team: open it in two browsers and watch</li>
+              <li>Exercise clock at ×10, ×60 or ×300 for training</li>
+            </ul>
+          </div>
+          <figure class="rise">
+            <div class="shot"><img src="img/run.webp" srcset="img/run-sm.webp 1120w, img/run.webp 2240w" sizes="(max-width: 860px) 100vw, 66vw" width="2240" height="1400" alt="A live exercise: the decision Encryption in progress, with Yes and No choices, the route on the frozen v3 diagram and the timeline" loading="lazy"></div>
+            <figcaption>Run · INC-2026-0003, decision S02</figcaption>
+          </figure>
+        </article>
+
+        <article class="step">
+          <div class="step-text rise">
+            <p class="step-num">04 — Report</p>
+            <h3>The report is already written.</h3>
+            <p>Close the incident and Muster drafts the report: executive summary, timeline, SLA performance, key decisions and the analyst’s notes. Edit, sign, download the PDF.</p>
+            <ul>
+              <li>Templates with your logo, accent colour and classification</li>
+              <li>ID patterns like <code>IR-{YYYY}-{SEQ}</code> or <code>{PB}-REG-{YYMMDD}-{SEQ}</code></li>
+              <li>Rename, hide or reorder sections; Markdown export</li>
+            </ul>
+          </div>
+          <figure class="rise">
+            <div class="shot"><img src="img/report.webp" srcset="img/report-sm.webp 1120w, img/report.webp 2240w" sizes="(max-width: 860px) 100vw, 66vw" width="2240" height="1400" alt="The incident report for Encrypted file server, Lyon office, with its executive summary and timeline, next to the editable fields" loading="lazy"></div>
+            <figcaption>Reports · generated from the closed exercise</figcaption>
+          </figure>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ playbooks ============ -->
+  <section id="playbooks" aria-labelledby="pb-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2 class="display" id="pb-h">Ten playbooks<br>on day one.</h2>
+        <p>Written for the incidents a security team actually meets, following the NIST phases. Start from them, then make them yours.</p>
+      </div>
+      <div class="library rise">
+        <article class="pb"><p class="code">PB-001 <span class="sev crit">Critical</span></p><h3>Ransomware</h3><p>Files encrypted or ransom note found. Contain fast, escalate early, restore from clean backups.</p></article>
+        <article class="pb"><p class="code">PB-002 <span class="sev med">Medium</span></p><h3>Phishing email</h3><p>Qualify the reported email, purge it everywhere and check who clicked.</p></article>
+        <article class="pb"><p class="code">PB-003 <span class="sev high">High</span></p><h3>Compromised account</h3><p>Cut access, scope what the attacker did, restore safely.</p></article>
+        <article class="pb"><p class="code">PB-004 <span class="sev high">High</span></p><h3>CEO fraud and payment diversion</h3><p>Fake executive or supplier, urgent payment. Stop the money first.</p></article>
+        <article class="pb"><p class="code">PB-005 <span class="sev high">High</span></p><h3>Personal data breach</h3><p>Contain, assess the risk, notify within 72 hours when required.</p></article>
+        <article class="pb"><p class="code">PB-006 <span class="sev med">Medium</span></p><h3>Malware on an endpoint</h3><p>EDR alert on a host. Check execution, contain, hunt for spread.</p></article>
+        <article class="pb"><p class="code">PB-007 <span class="sev high">High</span></p><h3>DDoS attack</h3><p>Confirm, mitigate upstream, keep customers informed.</p></article>
+        <article class="pb"><p class="code">PB-008 <span class="sev med">Medium</span></p><h3>Lost or stolen device</h3><p>Lock it, wipe it, check what data was on it.</p></article>
+        <article class="pb"><p class="code">PB-009 <span class="sev high">High</span></p><h3>Insider threat</h3><p>Stay discreet and work with HR and Legal.</p></article>
+        <article class="pb"><p class="code">PB-010 <span class="sev crit">Critical</span></p><h3>Exploited critical vulnerability</h3><p>Find exposure, mitigate, hunt for compromise.</p></article>
+      </div>
+      <p class="note">Review owners, SLAs and escalation contacts with your team before relying on them. Each one exports to YAML.</p>
+    </div>
+  </section>
+
+  <!-- ============ features ============ -->
+  <section id="features" aria-labelledby="ft-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2 class="display" id="ft-h">Built for the<br>worst night of the year.</h2>
+        <p>Calm, legible, fast. Everything a team needs while it happens, and everything an auditor asks for afterwards.</p>
+      </div>
+      <div class="features">
+        <div class="feat rise">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/></svg>
+          <h3>Accounts and roles</h3><p>Viewer, analyst, editor and admin. Local accounts with scrypt hashing, sessions you can revoke, an admin who can never lock themselves out.</p>
+        </div>
+        <div class="feat rise">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+          <h3>Live for everyone</h3><p>Incident progress, playbook changes and new reports reach every open browser instantly over server-sent events.</p>
+        </div>
+        <div class="feat rise">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>
+          <h3>PDF on the server</h3><p>The PDF is rendered from the same data and template as the on-screen preview, so what you approve is what you send.</p>
+        </div>
+        <div class="feat rise">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+          <h3>Audit log</h3><p>Sign-ins, publications, incident actions and account changes, with who and when. Readable by admins in the app.</p>
+        </div>
+        <div class="feat rise">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/></svg>
+          <h3>Light and dark</h3><p>A light interface by default and a dark one for the night shift. Reports and PDFs always print light.</p>
+        </div>
+        <div class="feat rise">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 7-5 5 5 5M16 7l5 5-5 5"/></svg>
+          <h3>Open formats</h3><p>Playbooks export to YAML, reports to Markdown and PDF. A plain JSON API behind every screen.</p>
+        </div>
+      </div>
+
+      <div class="duo" style="margin-top: 48px">
+        <figure class="rise"><div class="shot"><img src="img/template.webp" srcset="img/template-sm.webp 1120w, img/template.webp 2240w" sizes="(max-width: 760px) 100vw, 50vw" width="2240" height="1400" alt="The report template editor with the accent colour picker open" loading="lazy"></div><figcaption>Report templates · colour picker with a contrast check</figcaption></figure>
+        <figure class="rise"><div class="shot"><img src="img/dark.webp" srcset="img/dark-sm.webp 1120w, img/dark.webp 2240w" sizes="(max-width: 760px) 100vw, 50vw" width="2240" height="1400" alt="The playbook editor in dark mode" loading="lazy"></div><figcaption>Dark mode · the same editor for the night shift</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ architecture ============ -->
+  <section id="security" aria-labelledby="sec-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2 class="display" id="sec-h">Small enough<br>to audit.</h2>
+        <p>Node’s built-in HTTP server and SQLite, a React interface, one runtime dependency. You can read all of it in an afternoon.</p>
+      </div>
+      <div class="arch">
+        <pre class="tree rise" aria-label="Repository layout"><b>muster/</b>
+├─ <b>packages/core</b>  <i>types, 10 playbooks, diffs, engine</i>
+├─ <b>packages/pdf</b>   <i>report → PDF (pdf-lib)</i>
+├─ <b>apps/api</b>       <i>node:http, node:sqlite, roles</i>
+├─ <b>apps/web</b>       <i>React interface</i>
+├─ <b>scripts/</b>       <i>esbuild, demo launcher</i>
+└─ <b>tests/</b>         <i>API, browser walk-through</i></pre>
+        <ul class="checks rise">
+          <li><strong>Passwords</strong><span>scrypt hashes, login rate limiting</span></li>
+          <li><strong>Sessions</strong><span>HttpOnly, SameSite cookies; Secure behind HTTPS</span></li>
+          <li><strong>CSRF</strong><span>a required <code>X-Muster</code> header on every write</span></li>
+          <li><strong>Browser</strong><span>strict Content-Security-Policy, no third-party scripts</span></li>
+          <li><strong>Access</strong><span>role checks on every endpoint, audit log</span></li>
+          <li><strong>Data</strong><span>one SQLite file in your data folder; storage isolated in two files if you need PostgreSQL</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ start ============ -->
+  <div class="wrap">
+    <div class="start" id="start">
+      <div>
+        <h2 class="display">Try it in<br>two minutes.</h2>
+        <p>The demo opens with four accounts, the ten playbooks, a closed incident with its report and an exercise in progress, so every screen has something on it.</p>
+        <div class="actions" style="display:flex;gap:10px;flex-wrap:wrap">
+          <a class="btn" href="docs.html#quick-start">Quick start guide</a>
+          <a class="btn ghost" href="#" data-repo-link="">Source on GitHub</a>
+        </div>
+      </div>
+      <div class="term" aria-label="Install commands">
+        <div class="term-tabs" role="tablist">
+          <button role="tab" id="t-docker" aria-selected="true" aria-controls="p-docker">Docker</button>
+          <button role="tab" id="t-node" aria-selected="false" aria-controls="p-node">Node.js 22</button>
+        </div>
+        <pre id="p-docker" role="tabpanel" aria-labelledby="t-docker"><span class="p">$ </span><span data-repo-clone>git clone &lt;your-fork-url&gt;</span>
+<span class="p">$ </span>cd muster
+<span class="p">$ </span>docker compose up --build
+<span class="c"># open http://localhost:8080</span></pre>
+        <pre id="p-node" role="tabpanel" aria-labelledby="t-node" hidden><span class="p">$ </span><span data-repo-clone>git clone &lt;your-fork-url&gt;</span>
+<span class="p">$ </span>cd muster
+<span class="p">$ </span>npm install
+<span class="p">$ </span>npm run demo
+<span class="c"># open http://localhost:8080</span></pre>
+        <div class="term-foot"><span>Sign in as admin / muster-admin</span>
+          <button class="copy" aria-label="Copy commands"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="Muster home" style="font-size:17px">
+      <svg viewBox="0 0 22 22" aria-hidden="true" style="width:22px;height:22px"><rect x="1" y="1" width="20" height="20" rx="5" fill="#121413"/><path d="M5.5 15.5 V7 L11 12 L16.5 7 V15.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="square"/><circle cx="11" cy="16" r="1.9" fill="#FF5A1F"/></svg>
+      Muster
+    </a>
+    <span>Incident response playbooks, drawn, versioned and run live.</span>
+    <nav aria-label="Footer">
+      <a href="docs.html">Docs</a>
+      <a href="docs.html#api">API</a>
+      <a href="#" data-repo-link="">GitHub</a>
+    </nav>
+  </div>
+</footer>
+<script src="assets/site.js" type="module"></script>
+</body>
+</html>

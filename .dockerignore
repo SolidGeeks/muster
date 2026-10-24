@@ -1,0 +1,7 @@
+node_modules
+dist
+data
+tests/screens
+.git
+*.log
+data-demo

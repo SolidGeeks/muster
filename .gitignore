@@ -1,0 +1,11 @@
+node_modules/
+dist/
+data/
+tests/screens/
+*.log
+.DS_Store
+data-demo/
+dist-online/
+tests/screens-online/
+out/
+hero-film/audio/*.wav
