@@ -30,3 +30,6 @@ First release.
 - Licensed AGPL-3.0-or-later, with SPDX headers in every source file; `SECURITY.md`.
 - CI runs the type check and the API tests on every push and pull request; the Release workflow runs them again and publishes nothing if they fail.
 - The Docker build installs exactly the dependencies pinned in `package-lock.json` (`npm ci`).
+
+[1.0.1]: https://github.com/SolidGeeks/muster/releases/tag/v1.0.1
+[1.0.0]: https://github.com/SolidGeeks/muster/releases/tag/v1.0.0
