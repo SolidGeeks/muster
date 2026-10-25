@@ -2,6 +2,18 @@
 
 All notable changes to Muster. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- Built with TypeScript 7 and esbuild 0.28. The app's code is the same; the next image is assembled by the new tools, checked by the browser walk-through and the image test.
+
+### Added
+- Tests for restoring a playbook version and for the password change (wrong current password, strength, other sessions signed out), by [@man-singh-dev](https://github.com/man-singh-dev) ([#12](https://github.com/SolidGeeks/muster/pull/12), [#13](https://github.com/SolidGeeks/muster/pull/13)). Thanks, and welcome!
+- CI runs the browser walk-through and builds and starts the Docker image on every pull request.
+
+### Fixed
+- The browser walk-through no longer fails on Windows when removing its data folder.
+
 ## [1.0.1] - 2026-10-25
 
 ### Security
@@ -31,5 +43,6 @@ First release.
 - CI runs the type check and the API tests on every push and pull request; the Release workflow runs them again and publishes nothing if they fail.
 - The Docker build installs exactly the dependencies pinned in `package-lock.json` (`npm ci`).
 
+[Unreleased]: https://github.com/SolidGeeks/muster/compare/v1.0.1...HEAD
 [1.0.1]: https://github.com/SolidGeeks/muster/releases/tag/v1.0.1
 [1.0.0]: https://github.com/SolidGeeks/muster/releases/tag/v1.0.0
