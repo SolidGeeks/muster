@@ -184,6 +184,7 @@ try {
   process.exitCode = 1;
 } finally {
   await browser.close();
-  server.kill();
-  rmSync(dataDir, { recursive: true, force: true });
+  // Wait for the server to exit before removing its data folder: on Windows the database file is locked until then
+  if (server.exitCode === null) await new Promise(res => { server.once('exit', res); server.kill(); });
+  rmSync(dataDir, { recursive: true, force: true, maxRetries: 5 });
 }
