@@ -153,6 +153,33 @@ test('incidents: declare, conflicting moves, tasks, SLA, close, report, PDF', as
   assert.equal((await a.patch(`/api/reports/${rep.id}`, { severity: 'Low', summary: 'Edited' })).data.summary, 'Edited');
 });
 
+test('reports: Markdown export keeps user text inside its table cell', async () => {
+  // Cells of a Markdown table are split on unescaped pipes; a backslash escapes the next character
+  const cells = row => { let n = 0; for (let i = 0; i < row.length; i++) { if (row[i] === '\\') i++; else if (row[i] === '|') n++; } return n; };
+  const e = await as('editor');
+  const pb = (await e.post('/api/playbooks', { name: 'Table | injection', category: 'Test', severity: 'Low' })).data;
+  const g = structuredClone(pb.draft);
+  // A title ending in a backslash, a backslash before a pipe, and fake columns in the role
+  g.nodes.push({ id: 'x', type: 'action', title: 'Contain a\\|b \\', phase: 'Containment', role: 'SOC | Met | fake', sla: 15, desc: '', checklist: ['Do it'], x: 0, y: 100 });
+  g.edges = [{ id: 'e1', from: 'start', to: 'x', label: '' }, { id: 'e2', from: 'x', to: 'end', label: '' }];
+  assert.equal((await e.put(`/api/playbooks/${pb.id}/draft`, { graph: g, rev: pb.rev })).status, 200);
+  assert.equal((await e.post(`/api/playbooks/${pb.id}/publish`, { msg: 'v1' })).status, 200);
+
+  const a = await as('analyst');
+  const inc = (await a.post('/api/incidents', { playbookId: pb.id, name: 'Name | injected', mode: 'exercise', speed: 600, severity: 'Low' })).data;
+  let r = await a.post(`/api/incidents/${inc.id}/tasks`, { nodeId: 'x', index: 0, done: true });
+  r = await a.post(`/api/incidents/${inc.id}/advance`, { edgeId: 'e2', rev: r.data.rev });
+  assert.equal(r.data.status, 'closed', JSON.stringify(r.data));
+  const rep = (await a.post(`/api/incidents/${inc.id}/report`)).data;
+  const md = (await a.get(`/api/reports/${rep.id}/markdown`)).data;
+
+  // Every row of every table has as many cells as its header
+  const tables = md.split('\n\n').map(b => b.split('\n').filter(l => l.startsWith('|'))).filter(t => t.length > 2);
+  assert.ok(tables.length >= 2, 'the export has tables');
+  for (const t of tables) for (const row of t) assert.equal(cells(row), cells(t[0]), `row breaks its table:\n${row}`);
+  assert.match(md, /SOC \\\| Met \\\| fake/, 'pipes in user text are shown, escaped');
+});
+
 test('templates: validation, default, sequence', async () => {
   const e = await as('editor');
   const [std] = (await e.get('/api/templates')).data;

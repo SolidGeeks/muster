@@ -82,7 +82,7 @@ Back up with a copy of `DATA_DIR` (stop the container first, or use `sqlite3 mus
 Every published image is signed: an attestation proves it was built by this repository's `Release` workflow, from the code of the tag. Check it before deploying (needs the [GitHub CLI](https://cli.github.com/)):
 
 ```bash
-gh attestation verify oci://ghcr.io/solidgeeks/muster:1.0.0 --owner SolidGeeks
+gh attestation verify oci://ghcr.io/solidgeeks/muster:1.0.1 --owner SolidGeeks
 ```
 
 It must print `Verification succeeded!`. If it fails, do not run the image, and report it (see [SECURITY.md](SECURITY.md)).
