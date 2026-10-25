@@ -182,18 +182,22 @@ export function reportStatusLabel(s: ReportData['status']): string {
 
 export function toMarkdown(t: Template, r: Report): string {
   const d = r.data, withSla = d.steps.filter(s => s.sla), met = withSla.filter(s => !s.breach).length;
-  const cell = (x: unknown) => String(x).replace(/\|/g, '\\|').replace(/\n/g, ' ');
-  let m = `# ${r.num} — ${d.name}\n\n${t.org}${t.classification ? ' · ' + t.classification : ''}\n\n| Field | Value |\n|---|---|\n` +
-    `| Incident | ${d.ref}${d.mode === 'exercise' ? ' (exercise)' : ''} |\n| Playbook | ${d.pbCode} ${d.pbName} v${d.v} |\n| Severity | ${r.severity} |\n| Status | ${reportStatusLabel(d.status)} |\n` +
-    `| Declared | ${fmtLong(d.startedAt)} |\n| Duration | ${fmtDur(d.duration)} |\n| SLAs met | ${withSla.length ? met + ' / ' + withSla.length : '—'} |\n| Author | ${r.author} |\n\n`;
+  // User text must stay where it is put: on its line (headings, list items) and in its table cell.
+  // Summary and notes are left alone: they are free Markdown written by the analyst.
+  const oneLine = (x: unknown) => String(x ?? '').replace(/[\r\n]+/g, ' ');
+  // Escape the backslash first, or "a\|b" would become "a\\|b": an escaped backslash, then a column break
+  const cell = (x: unknown) => oneLine(x).replace(/\\/g, '\\\\').replace(/\|/g, '\\|');
+  let m = `# ${oneLine(r.num)} — ${oneLine(d.name)}\n\n${oneLine(t.org)}${t.classification ? ' · ' + oneLine(t.classification) : ''}\n\n| Field | Value |\n|---|---|\n` +
+    `| Incident | ${cell(d.ref)}${d.mode === 'exercise' ? ' (exercise)' : ''} |\n| Playbook | ${cell(d.pbCode)} ${cell(d.pbName)} v${cell(d.v)} |\n| Severity | ${cell(r.severity)} |\n| Status | ${reportStatusLabel(d.status)} |\n` +
+    `| Declared | ${fmtLong(d.startedAt)} |\n| Duration | ${fmtDur(d.duration)} |\n| SLAs met | ${withSla.length ? met + ' / ' + withSla.length : '—'} |\n| Author | ${cell(r.author)} |\n\n`;
   t.sections.filter(s => s.on).forEach((s, i) => {
-    m += `## ${String(i + 1).padStart(2, '0')} ${s.title}\n\n`;
+    m += `## ${String(i + 1).padStart(2, '0')} ${oneLine(s.title)}\n\n`;
     if (s.key === 'summary') m += (r.summary || '') + '\n\n';
     else if (s.key === 'notes') m += (r.notes || '_No analyst notes._') + '\n\n';
     else if (s.key === 'timeline') m += '| UTC | T+ | Type | Event |\n|---|---|---|---|\n' + d.timeline.map(l => `| ${fmtHM(d.startedAt + l.t)} | ${fmtT(l.t).slice(2)} | ${LOG_LABEL[l.kind] || ''} | ${cell(l.msg)} |`).join('\n') + '\n\n';
-    else if (s.key === 'sla') m += '| Step | Owner | Target | Actual | Status |\n|---|---|---|---|---|\n' + d.steps.map(x => `| ${x.code} ${cell(x.title)} | ${x.role || '—'} | ${x.sla ? fmtSla(x.sla) : '—'} | ${fmtDur(x.dur)} | ${!x.sla ? '—' : x.breach ? 'Breached' : 'Met'} |`).join('\n') + '\n\n';
-    else if (s.key === 'decisions') m += (d.decisions.map(x => `- **${x.q}** ${x.a}, then ${x.to}`).join('\n') || '_No decisions recorded._') + '\n\n';
-    else if (s.key === 'signoff') m += `- Prepared by: ${r.author}\n- Reviewed by:\n- Approved by:\n\n`;
+    else if (s.key === 'sla') m += '| Step | Owner | Target | Actual | Status |\n|---|---|---|---|---|\n' + d.steps.map(x => `| ${cell(x.code)} ${cell(x.title)} | ${x.role ? cell(x.role) : '—'} | ${x.sla ? fmtSla(x.sla) : '—'} | ${fmtDur(x.dur)} | ${!x.sla ? '—' : x.breach ? 'Breached' : 'Met'} |`).join('\n') + '\n\n';
+    else if (s.key === 'decisions') m += (d.decisions.map(x => `- **${oneLine(x.q)}** ${oneLine(x.a)}, then ${oneLine(x.to)}`).join('\n') || '_No decisions recorded._') + '\n\n';
+    else if (s.key === 'signoff') m += `- Prepared by: ${oneLine(r.author)}\n- Reviewed by:\n- Approved by:\n\n`;
   });
   return m + `---\n\n${t.footer}\n`;
 }

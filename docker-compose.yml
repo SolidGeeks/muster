@@ -1,7 +1,7 @@
 services:
   muster:
     # Prebuilt, signed image from GitHub (docker compose pull), or built here (docker compose up --build)
-    image: ghcr.io/solidgeeks/muster:1.0.0
+    image: ghcr.io/solidgeeks/muster:1.0.1
     build: .
     ports:
       - "8080:8080"

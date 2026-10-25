@@ -2,6 +2,14 @@
 
 All notable changes to Muster. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.0.1] - 2026-10-25
+
+### Security
+- **Markdown export of incident reports** (*Download → Markdown*, and the plain-text part of *Copy formatted*): text typed by users could break out of its table cell or its line, so someone able to edit a playbook, a template or an incident could alter the tables of an exported report (for example show *Met* next to a breached SLA). Backslashes are now escaped before pipes, every user value in a table goes through the same escaping, and line breaks are removed from headings and list items. The PDF, the on-screen report and the formatted (HTML) copy were not affected. Found by CodeQL (`js/incomplete-sanitization`).
+
+### Added
+- Test: every row of every table in the Markdown export keeps the number of cells of its header, with hostile playbook, role and incident names.
+
 ## [1.0.0] - 2026-10-25
 
 First release.

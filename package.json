@@ -1,6 +1,6 @@
 {
   "name": "muster",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Incident response playbooks: visual editor, guided runs, version history and incident reports.",
   "license": "AGPL-3.0-or-later",
