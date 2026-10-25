@@ -179,3 +179,19 @@ test('users: create, disable, keep one admin, audit', async () => {
   const audit = (await ad.get('/api/audit')).data;
   assert.ok(audit.some(x => x.action === 'user.create'));
 });
+
+test('password change: current password, strength, other sessions signed out', async () => {
+  const ad = await as('admin');
+  assert.equal((await ad.post('/api/users', { username: 'pw.user', name: 'Password User', role: 'viewer', password: 'first-password' })).status, 200);
+  const login = async (pw, c = new Client()) => ({ c, status: (await c.post('/api/auth/login', { username: 'pw.user', password: pw })).status });
+  const { c } = await login('first-password');
+  const { c: other } = await login('first-password');
+  assert.equal((await c.post('/api/auth/password', { current: 'not-my-password', next: 'second-password' })).status, 400);
+  assert.equal((await c.post('/api/auth/password', { current: 'first-password', next: 'short' })).status, 400);
+  assert.equal((await other.get('/api/playbooks')).status, 200);
+  assert.equal((await c.post('/api/auth/password', { current: 'first-password', next: 'second-password' })).status, 200);
+  assert.equal((await c.get('/api/playbooks')).status, 200, 'the session that changed the password stays signed in');
+  assert.equal((await other.get('/api/playbooks')).status, 401, 'the other session is signed out');
+  assert.equal((await login('first-password')).status, 401);
+  assert.equal((await login('second-password')).status, 200);
+});
