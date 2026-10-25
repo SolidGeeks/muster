@@ -114,6 +114,27 @@ test('playbooks: draft save, conflict detection, publish rules, history', async 
   assert.match(y.data, /Rotate the key/);
 });
 
+test('playbooks: restore a version into the draft, roles, missing version', async () => {
+  const e = await as('editor');
+  const ransomware = (await e.get('/api/playbooks')).data.find(p => p.code === 'PB-001');
+  const before = (await e.get(`/api/playbooks/${ransomware.id}`)).data;
+  const v1 = before.versions.find(x => x.v === 1);
+  assert.notDeepEqual(before.draft, v1.graph, 'the draft must differ from v1, or the restore proves nothing');
+  // Viewers and analysts cannot restore
+  assert.equal((await (await as('viewer')).post(`/api/playbooks/${ransomware.id}/restore`, { v: 1 })).status, 403);
+  assert.equal((await (await as('analyst')).post(`/api/playbooks/${ransomware.id}/restore`, { v: 1 })).status, 403);
+  // An unknown version is refused (editor, so the role check passes first)
+  assert.equal((await e.post(`/api/playbooks/${ransomware.id}/restore`, { v: 999 })).status, 404);
+  // Restore v1: the draft becomes v1, rev moves on, published versions are untouched
+  assert.equal((await e.post(`/api/playbooks/${ransomware.id}/restore`, { v: 1 })).status, 200);
+  const restored = (await e.get(`/api/playbooks/${ransomware.id}`)).data;
+  assert.deepEqual(restored.draft, v1.graph);
+  assert.equal(restored.rev, before.rev + 1);
+  assert.deepEqual(restored.versions, before.versions);
+  // Put the original draft back for later tests
+  assert.equal((await e.put(`/api/playbooks/${ransomware.id}/draft`, { graph: before.draft, rev: restored.rev })).status, 200);
+});
+
 test('incidents: declare, conflicting moves, tasks, SLA, close, report, PDF', async () => {
   const a = await as('analyst');
   const pbs = (await a.get('/api/playbooks')).data;
