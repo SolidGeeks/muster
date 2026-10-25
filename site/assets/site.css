@@ -225,6 +225,12 @@ figcaption { margin-top: 12px; font: 400 13px/1.4 var(--mono); color: var(--mute
 .term-foot { display: flex; justify-content: space-between; align-items: center; padding: 0 16px 16px 24px; font: 400 13px/1.4 var(--mono); color: #9DA29E; gap: 12px; }
 @media (max-width: 960px) { .start { grid-template-columns: minmax(0, 1fr); } }
 
+/* community banner (Solid Geeks) */
+.community { margin-top: clamp(64px, 8vw, 120px); }
+.community a { display: block; border-radius: var(--radius); overflow: hidden; }
+.community img { width: 100%; height: auto; }
+.community + footer { margin-top: clamp(32px, 4vw, 56px); }
+
 /* footer */
 footer { margin-top: clamp(64px, 8vw, 120px); border-top: 1px solid var(--line); padding: 36px 0 48px; font-size: 14.5px; color: var(--muted); }
 footer .wrap { display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: center; }
