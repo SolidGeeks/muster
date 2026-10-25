@@ -5,3 +5,8 @@ tests/screens
 .git
 *.log
 data-demo
+dist-online
+tests/screens-online
+hero-film
+site
+out

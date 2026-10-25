@@ -1,5 +1,7 @@
 # Muster
 
+[![Release](https://img.shields.io/github/v/release/SolidGeeks/muster)](https://github.com/SolidGeeks/muster/releases) [![Licence AGPL-3.0](https://raw.githubusercontent.com/SolidGeeks/.github/main/assets/badges/license-agpl.svg)](LICENSE) [![Signed releases](https://raw.githubusercontent.com/SolidGeeks/.github/main/assets/badges/signed-releases.svg)](#verify-the-image) [![Tests](https://github.com/SolidGeeks/muster/actions/workflows/ci.yml/badge.svg)](https://github.com/SolidGeeks/muster/actions/workflows/ci.yml)
+
 Incident response playbooks for security teams: draw them as diagrams, version them, run them step by step during an incident or an exercise, and produce the incident report as a PDF.
 
 ## Try it in two minutes
@@ -7,6 +9,8 @@ Incident response playbooks for security teams: draw them as diagrams, version t
 **With Docker** (nothing else to install):
 
 ```bash
+docker compose pull && docker compose up   # prebuilt, signed image from GitHub
+# or build it here:
 docker compose up --build
 ```
 
@@ -72,6 +76,16 @@ Set `DEMO_MODE=false`. On first start Muster creates one `admin` account; set `A
 Put Muster behind a reverse proxy that terminates TLS (nginx, Caddy, Traefik). Server-sent events are used for live updates, so disable response buffering for `/api/events` if your proxy buffers.
 
 Back up with a copy of `DATA_DIR` (stop the container first, or use `sqlite3 muster.db ".backup backup.db"`).
+
+### Verify the image
+
+Every published image is signed: an attestation proves it was built by this repository's `Release` workflow, from the code of the tag. Check it before deploying (needs the [GitHub CLI](https://cli.github.com/)):
+
+```bash
+gh attestation verify oci://ghcr.io/solidgeeks/muster:1.0.0 --owner SolidGeeks
+```
+
+It must print `Verification succeeded!`. If it fails, do not run the image, and report it (see [SECURITY.md](SECURITY.md)).
 
 ## How it is built
 
