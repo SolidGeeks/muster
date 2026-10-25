@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import type { ServerResponse } from 'node:http';
 import { Router, HttpError, send, parseCookies, type Ctx } from './http';
 import type { Store } from './db';

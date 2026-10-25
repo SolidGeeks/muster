@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   type Report, type Template, SEVERITIES, SECTION_LABEL, fmtDate, plural, formatId,
@@ -63,7 +64,7 @@ function ReportEditor({ id, templates, onChanged }: { id: string; templates: Tem
   const { data, error, reload, setData } = useLoad(() => api.report(id), [id]);
   const [state, setState] = useState<'saved' | 'dirty' | 'saving'>('saved');
   const [saving, setSaving] = useState(false);
-  const timer = useRef<number>();
+  const timer = useRef<number | undefined>(undefined);
   const pendingPatch = useRef<Partial<Report>>({});
   const sheetRef = useRef<HTMLDivElement>(null);
   useChanges(c => { if (c.type === 'report' && c.id === id && c.by !== me.id && state === 'saved') reload(); });
@@ -168,7 +169,7 @@ function TemplateEditor({ initial, reports, onChanged }: { initial: Template; re
   const [t, setT] = useState<Template>(initial);
   const [state, setState] = useState<'saved' | 'dirty' | 'saving'>('saved');
   const [preview, setPreview] = useState<Report | null>(null);
-  const timer = useRef<number>();
+  const timer = useRef<number | undefined>(undefined);
   const tRef = useRef(t); tRef.current = t;
   const patRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);

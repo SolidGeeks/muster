@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // End-to-end walk through every screen with a real browser.
 // Usage: npm run test:e2e   (needs `npx playwright install chromium` once)
 // Screenshots land in tests/screens/.

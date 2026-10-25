@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Incident, Clock, Graph, ReportData, Report, Template, LogKind, TemplateSection } from './types';
 import { stepCodes } from './graph';
 import { fmtDur, fmtLong, fmtSla, fmtHM, fmtT, plural, LOG_LABEL } from './format';

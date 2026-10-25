@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // Builds the online version: one self-contained HTML page for publishing as a Claude artifact.
 // Data lives in the artifact's shared store; see apps/web/src/backend/artifact.ts.
 import { build } from 'esbuild';

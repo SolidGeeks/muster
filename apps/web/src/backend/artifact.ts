@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 /**
  * Backend for the online version published as a Claude artifact.
  * Same surface as backend/http.ts, but data lives in the artifact's shared store (`db` capability),
@@ -313,7 +314,7 @@ export async function saveFile(kind: 'pdf' | 'md', reportId: string): Promise<vo
   const tpl = (await templates()).find(t => t.id === raw.templateId) || (await templates())[0];
   const r = await withNames(raw);
   const base = r.num.replace(/[^A-Za-z0-9._-]+/g, '-');
-  const data = kind === 'pdf' ? new Blob([await renderReportPdf(tpl, r)], { type: 'application/pdf' }) : toMarkdown(tpl, r);
+  const data = kind === 'pdf' ? new Blob([(await renderReportPdf(tpl, r)) as Uint8Array<ArrayBuffer>], { type: 'application/pdf' }) : toMarkdown(tpl, r);
   try { await dl.save({ filename: `${base}.${kind}`, data }); }
   catch (e: any) {
     if (e?.code === 'declined') throw new ApiError(0, '');

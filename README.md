@@ -113,3 +113,9 @@ The hero film is made from code in `hero-film/`: `capture.mjs` takes real screen
 - Accounts are local. SSO (OIDC/SAML) is not built in yet.
 - SQLite suits a single server and a team-sized load. For high availability, move the storage layer to PostgreSQL.
 - PDF text uses the standard Helvetica and Courier fonts, which cover Western European languages. Other scripts are dropped from the PDF (the on-screen report shows them).
+
+## License and contributing
+
+Muster is free software under the [GNU AGPL v3 or later](LICENSE): if you offer a modified version to users over a network, you must give them its source code.
+
+Contributions follow the [Solid standard](https://github.com/SolidGeeks/.github/blob/main/CONTRIBUTING.md): sign off every commit with `git commit -s` (DCO), no CLA. To report a vulnerability, see [SECURITY.md](SECURITY.md).

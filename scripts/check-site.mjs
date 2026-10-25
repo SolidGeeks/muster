@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // Site check: serves site/, loads both pages at desktop and phone widths, checks links, anchors,
 // images, video and console errors, and writes screenshots to out/site/.
 // Usage (project root): node scripts/check-site.mjs

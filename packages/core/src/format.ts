@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 export const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : 's'}`;
 
 export function fmtSla(m: number): string {

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Store } from './db';
 import {
   type Playbook, type PlaybookSummary, type Graph, type Incident, type Report, type Template, type User, type Version,

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import type { ReactElement } from 'react';
 import type { Report, Template } from '@muster/core';
 import { fmtDur, fmtLong, fmtSla, fmtHM, fmtT, LOG_LABEL, reportStatusLabel } from '@muster/core';

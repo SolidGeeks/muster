@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import { useEffect, useRef, useState } from 'react';
 import { api, features, type Me } from '@muster/backend';
 import { MeCtx, useRoute, go, can, startEvents, stopEvents, useChanges, useLoad, Loading, Brand, initials, useNow, ThemeCtx, useThemeState, useTheme, ThemeToggle, type ThemePref } from './lib';

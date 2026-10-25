@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Role } from '@muster/core';
 import { connectEvents, resolveNames, type Me } from '@muster/backend';

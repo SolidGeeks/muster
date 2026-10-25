@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import { useEffect, useState } from 'react';
 import { api, type Me } from '@muster/backend';
 

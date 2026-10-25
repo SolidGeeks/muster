@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { type Graph, diff, edgeKey, fmtDate, fmtSla, plural, TYPE_LABEL, DIFF_FIELDS, NODE_W, NODE_H, GAP_X, GAP_Y, EMPTY_GRAPH } from '@muster/core';
 import { api } from '@muster/backend';

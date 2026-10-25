@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { createReadStream, statSync, existsSync } from 'node:fs';
 import { extname, join, normalize, resolve, sep } from 'node:path';

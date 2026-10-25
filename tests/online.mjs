@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // Tests the online (artifact) build in a browser with a stand-in for Claude's page runtime:
 // an in-memory shared store, a fake viewer identity and a save prompt that always accepts.
 // Usage: node scripts/build-online.mjs && node tests/online.mjs

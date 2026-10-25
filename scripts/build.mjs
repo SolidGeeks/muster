@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // Builds the API (one Node file) and the web app (static files) into dist/.
 // Usage: node scripts/build.mjs [--watch]
 import { build, context } from 'esbuild';

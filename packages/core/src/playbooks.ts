@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Graph, NodeType, Severity } from './types';
 import { layout, makeNode, makeEdge, clone } from './graph';
 

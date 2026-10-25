@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // Captures the real Muster screens used by the film, with the brand's own fonts.
 // Runs the app in demo mode, drives it with Playwright, and writes assets/shots/*.png at 2x.
 // Usage (from the project root): node hero-film/capture.mjs

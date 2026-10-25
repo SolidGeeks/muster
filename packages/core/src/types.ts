@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 export type NodeType = 'start' | 'action' | 'decision' | 'escalation' | 'end';
 export type Role = 'viewer' | 'analyst' | 'editor' | 'admin';
 export type Severity = 'Low' | 'Medium' | 'High' | 'Critical';

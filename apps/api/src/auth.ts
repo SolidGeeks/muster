@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import { scryptSync, randomBytes, timingSafeEqual, createHash } from 'node:crypto';
 import type { Store } from './db';
 import type { Role } from '@muster/core';

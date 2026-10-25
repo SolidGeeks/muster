@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import { useEffect, useState } from 'react';
 import { SEVERITIES, fmtClock, fmtLong, plural, type Severity } from '@muster/core';
 import { api, type IncidentRow, type PlaybookFull } from '@muster/backend';

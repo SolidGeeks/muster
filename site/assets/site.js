@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // Muster site: small progressive enhancements. Everything works without it.
 document.documentElement.classList.add('js');
 const reduce = matchMedia('(prefers-reduced-motion: reduce)');

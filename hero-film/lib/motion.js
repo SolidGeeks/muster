@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // motion.js: the harness and toolkit for a film that is a pure function of time.
 //
 //   import * as M from './lib/motion.js';

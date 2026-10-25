@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // API tests. Run with: npm test
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -17,7 +18,10 @@ before(async () => {
   server = spawn(process.execPath, ['--no-warnings', join(root, 'dist/server.js')], { env: { ...process.env, PORT: String(port), DATA_DIR: dataDir, DEMO_MODE: 'true' }, stdio: ['ignore', 'pipe', 'inherit'] });
   await new Promise((res, rej) => { server.stdout.on('data', d => { if (String(d).includes('listening')) res(); }); server.on('exit', c => rej(new Error('exit ' + c))); });
 });
-after(() => { server?.kill(); rmSync(dataDir, { recursive: true, force: true }); });
+after(async () => {
+  if (server && server.exitCode === null) await new Promise(res => { server.once('exit', res); server.kill(); });
+  rmSync(dataDir, { recursive: true, force: true, maxRetries: 5 });
+});
 
 class Client {
   cookie = '';

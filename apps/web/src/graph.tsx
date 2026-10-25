@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import type { ReactElement } from 'react';
 import type { Graph, PNode, PEdge } from '@muster/core';
 import { NODE_W as W, NODE_H as H, GAP_X, GAP_Y, PHASES, TYPE_LABEL, stepCodes, fmtSla } from '@muster/core';

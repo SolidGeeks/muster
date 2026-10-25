@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 # /// script
 # requires-python = ">=3.10"
 # dependencies = ["numpy", "scipy"]

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import { createRoot } from 'react-dom/client';
 import './styles.css';
 import { App } from './App';

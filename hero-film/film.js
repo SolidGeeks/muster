@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // Muster hero loop: pure function of time. window.seek(t) paints frame t (lib/motion.js).
 // Timing is in beats (u) on beats.json (120 bpm, 40 beats, loops). docs/shotlist.md is the plan.
 // Every screen is a real capture of the product (assets/shots, captured by capture.mjs).

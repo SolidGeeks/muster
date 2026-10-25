@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import { randomBytes } from 'node:crypto';
 import type { Store } from './db';
 import { hashPassword } from './auth';

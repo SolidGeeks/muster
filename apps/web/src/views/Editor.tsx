@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type PointerEvent as RPointerEvent } from 'react';
 import {
   type Graph, type PNode, type NodeType, type Severity, PHASES, ROLES, TYPE_LABEL, SEVERITIES,
@@ -43,7 +44,7 @@ export function PlaybookEditor({ id }: { id: string }) {
   const undo = useRef<string[]>([]);
   const redo = useRef<string[]>([]);
   const gRef = useRef(g); gRef.current = g;
-  const saveTimer = useRef<number>();
+  const saveTimer = useRef<number | undefined>(undefined);
   const dirtyRef = useRef(false);
 
   const load = useCallback(async () => {
@@ -234,7 +235,7 @@ export function PlaybookEditor({ id }: { id: string }) {
   };
 
   /* ---------- keyboard ---------- */
-  const keyRef = useRef<(e: KeyboardEvent) => void>();
+  const keyRef = useRef<((e: KeyboardEvent) => void) | undefined>(undefined);
   keyRef.current = (e: KeyboardEvent) => {
     if (document.querySelector('.modal')) return;
     const inField = !!(e.target as HTMLElement).closest('input,textarea,select');

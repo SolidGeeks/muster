@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import { useState } from 'react';
 import type { Role, User } from '@muster/core';
 import { api } from '@muster/backend';

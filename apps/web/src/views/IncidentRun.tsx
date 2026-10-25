@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import { useEffect, useRef, useState } from 'react';
 import { PHASES, SEVERITIES, stepCodes, fmtClock, fmtDur, fmtSla, fmtT, plural, LOG_LABEL, clockNow, type Severity } from '@muster/core';
 import { api, ApiError, type IncidentFull } from '@muster/backend';
@@ -149,7 +150,7 @@ function Notes({ inc, readOnly, onSaved }: { inc: IncidentFull; readOnly: boolea
   const toast = useToast();
   const [v, setV] = useState(inc.notes);
   const [state, setState] = useState<'saved' | 'dirty' | 'saving'>('saved');
-  const timer = useRef<number>();
+  const timer = useRef<number | undefined>(undefined);
   const focused = useRef(false);
   useEffect(() => { if (!focused.current && state === 'saved') setV(inc.notes); }, [inc.notes]); // eslint-disable-line react-hooks/exhaustive-deps
   const save = async (text: string) => {

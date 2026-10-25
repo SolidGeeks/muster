@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage, type RGB } from 'pdf-lib';
 import {
   type Report, type Template, fmtDur, fmtLong, fmtSla, fmtHM, fmtT, LOG_LABEL, reportStatusLabel

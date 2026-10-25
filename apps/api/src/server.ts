@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import { createServer, type Server } from 'node:http';
 import { resolve, join } from 'node:path';
 import { Store } from './db';
