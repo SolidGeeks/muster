@@ -225,6 +225,42 @@ test('reports: Markdown export keeps user text inside its table cell', async () 
   assert.match(md, /SOC \\\| Met \\\| fake/, 'pipes in user text are shown, escaped');
 });
 
+test('incidents: exercise speed and incident details, roles', async () => {
+  const a = await as('analyst');
+  const v = await as('viewer');
+  const malware = (await a.get('/api/playbooks')).data.find(p => p.code === 'PB-006');
+  const ex = (await a.post('/api/incidents', { playbookId: malware.id, name: 'Speed drill', mode: 'exercise', speed: 60, severity: 'Medium' })).data;
+  const live = (await a.post('/api/incidents', { playbookId: malware.id, name: 'Real one', mode: 'live', severity: 'High' })).data;
+  assert.equal(ex.mode, 'exercise');
+  assert.equal(live.mode, 'live');
+  // Speed: 1..600 on an active exercise, and the clock follows
+  for (const speed of [1, 600, 120]) {
+    const r = await a.post(`/api/incidents/${ex.id}/speed`, { speed });
+    assert.equal(r.status, 200);
+    assert.equal(r.data.clock.speed, speed);
+  }
+  assert.equal((await a.post(`/api/incidents/${ex.id}/speed`, { speed: 0 })).status, 400);
+  assert.equal((await a.post(`/api/incidents/${ex.id}/speed`, { speed: 601 })).status, 400);
+  assert.equal((await a.get(`/api/incidents/${ex.id}`)).data.clock.speed, 120, 'refused speeds leave the clock alone');
+  assert.equal((await v.post(`/api/incidents/${ex.id}/speed`, { speed: 10 })).status, 403);
+  // A live incident has no speed to change
+  assert.equal((await a.post(`/api/incidents/${live.id}/speed`, { speed: 10 })).status, 422);
+  // Details: name and severity can be changed
+  let r = await a.post(`/api/incidents/${live.id}/meta`, { name: 'Renamed', severity: 'Critical' });
+  assert.equal(r.status, 200);
+  assert.equal(r.data.name, 'Renamed');
+  assert.equal(r.data.severity, 'Critical');
+  assert.equal((await a.post(`/api/incidents/${live.id}/meta`, { name: '' })).status, 400);
+  assert.equal((await a.post(`/api/incidents/${live.id}/meta`, { severity: 'Extreme' })).status, 400);
+  assert.equal((await v.post(`/api/incidents/${live.id}/meta`, { name: 'Viewer was here' })).status, 403);
+  r = (await a.get(`/api/incidents/${live.id}`)).data;
+  assert.equal(r.name, 'Renamed');
+  assert.equal(r.severity, 'Critical');
+  // Once an exercise is stopped its speed is fixed
+  assert.equal((await a.post(`/api/incidents/${ex.id}/stop`)).status, 200);
+  assert.equal((await a.post(`/api/incidents/${ex.id}/speed`, { speed: 10 })).status, 422);
+});
+
 test('templates: validation, default, sequence', async () => {
   const e = await as('editor');
   const [std] = (await e.get('/api/templates')).data;
