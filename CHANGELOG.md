@@ -9,6 +9,7 @@ All notable changes to Muster. Versions follow [Semantic Versioning](https://sem
 
 ### Added
 - Tests for restoring a playbook version and for the password change (wrong current password, strength, other sessions signed out), by [@man-singh-dev](https://github.com/man-singh-dev) ([#12](https://github.com/SolidGeeks/muster/pull/12), [#13](https://github.com/SolidGeeks/muster/pull/13)). Thanks, and welcome!
+- Tests for stopping an incident early (roles, conflicts, the report status) and for the exercise speed and the incident details (limits, live incidents, roles), by [@am-official](https://github.com/am-official) ([#18](https://github.com/SolidGeeks/muster/pull/18), [#19](https://github.com/SolidGeeks/muster/pull/19)). Thanks, and welcome!
 - CI runs the browser walk-through and builds and starts the Docker image on every pull request.
 
 ### Fixed
