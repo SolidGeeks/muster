@@ -174,6 +174,30 @@ test('incidents: declare, conflicting moves, tasks, SLA, close, report, PDF', as
   assert.equal((await a.patch(`/api/reports/${rep.id}`, { severity: 'Low', summary: 'Edited' })).data.summary, 'Edited');
 });
 
+test('incidents: stop a response early, roles, unknown incident, report status', async () => {
+  const a = await as('analyst');
+  const malware = (await a.get('/api/playbooks')).data.find(p => p.code === 'PB-006');
+  const inc = (await a.post('/api/incidents', { playbookId: malware.id, name: 'Stopped early', mode: 'exercise', speed: 60, severity: 'High' })).data;
+  assert.equal(inc.status, 'active');
+  // Viewers cannot stop, an unknown incident is 404, a stale revision is 409
+  assert.equal((await (await as('viewer')).post(`/api/incidents/${inc.id}/stop`)).status, 403);
+  assert.equal((await a.post('/api/incidents/inc_missing/stop')).status, 404);
+  assert.equal((await a.post(`/api/incidents/${inc.id}/stop`, { rev: inc.rev - 1 })).status, 409);
+  // The analyst stops it: status, end time and the last log line
+  const r = await a.post(`/api/incidents/${inc.id}/stop`, { rev: inc.rev });
+  assert.equal(r.status, 200);
+  assert.equal(r.data.status, 'stopped');
+  assert.equal(typeof r.data.endedAt, 'number');
+  assert.equal(r.data.log.at(-1).msg, 'Response stopped manually');
+  assert.equal((await a.get(`/api/incidents/${inc.id}`)).data.status, 'stopped');
+  // Stopping again is refused
+  assert.equal((await a.post(`/api/incidents/${inc.id}/stop`)).status, 422);
+  // A report made after the stop says so
+  const rep = (await a.post(`/api/incidents/${inc.id}/report`)).data;
+  const md = (await a.get(`/api/reports/${rep.id}/markdown`)).data;
+  assert.match(md, /\| Status \| Response stopped \|/);
+});
+
 test('reports: Markdown export keeps user text inside its table cell', async () => {
   // Cells of a Markdown table are split on unescaped pipes; a backslash escapes the next character
   const cells = row => { let n = 0; for (let i = 0; i < row.length; i++) { if (row[i] === '\\') i++; else if (row[i] === '|') n++; } return n; };
