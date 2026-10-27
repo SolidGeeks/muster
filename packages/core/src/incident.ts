@@ -111,6 +111,8 @@ export function simulateIncident(inc: Incident, choices: Record<string, string>,
   return inc;
 }
 
+const STATE_ORDER = ['compromised', 'suspected', 'contained'];
+
 export function reportData(inc: Incident, now = Date.now()): ReportData {
   const g = inc.graph, f = (id: string) => g.nodes.find(x => x.id === id), codes = stepCodes(g);
   const steps = inc.steps
@@ -126,7 +128,8 @@ export function reportData(inc: Incident, now = Date.now()): ReportData {
   return {
     ref: inc.ref, name: inc.name, pbCode: inc.pbCode, pbName: inc.pbName, v: inc.v, mode: inc.mode, startedAt: inc.startedAt,
     duration: inc.status === 'active' ? clockNow(inc.clock, now) : (inc.endedAt ?? 0), status: inc.status,
-    steps, decisions, timeline: inc.log.map(l => ({ ...l })), notes: inc.notes || ''
+    steps, decisions, timeline: inc.log.map(l => ({ ...l })), notes: inc.notes || '',
+    ...(inc.strata ? { strata: { site: inc.strata.site, assets: Object.entries(inc.strata.marks).map(([id, state]) => ({ id, name: inc.strata!.names[id] || id, state })).sort((a, b) => STATE_ORDER.indexOf(a.state) - STATE_ORDER.indexOf(b.state) || a.name.localeCompare(b.name)) } } : {})
   };
 }
 
@@ -156,8 +159,19 @@ export function formatId(tpl: Pick<Template, 'pattern' | 'pad'>, date: number | 
 }
 
 export const SECTION_LABEL: Record<TemplateSection['key'], string> = {
-  summary: 'Executive summary', timeline: 'Timeline', sla: 'SLA performance', decisions: 'Key decisions', notes: 'Analyst notes', signoff: 'Sign-off'
+  summary: 'Executive summary', timeline: 'Timeline', sla: 'SLA performance', decisions: 'Key decisions', assets: 'Assets hit (Strata)', notes: 'Analyst notes', signoff: 'Sign-off'
 };
+/** A template with every section: one saved before a section existed gets it, shown, after the section it follows by default. */
+export function withAllSections(t: Template): Template {
+  const keys = Object.keys(SECTION_LABEL) as TemplateSection['key'][];
+  const s = [...(t.sections || [])];
+  keys.forEach((k, i) => { if (!s.some(x => x.key === k)) { const prev = keys.slice(0, i).reverse().map(p => s.findIndex(x => x.key === p)).find(j => j >= 0) ?? -1; s.splice(prev + 1, 0, { key: k, title: SECTION_LABEL[k], on: true }); } });
+  return { ...t, sections: s };
+}
+/** The sections a report shows: those switched on, without the Strata section for an incident not linked to Strata. */
+export function reportSections(t: Template, d: ReportData): TemplateSection[] {
+  return withAllSections(t).sections.filter(s => s.on && (s.key !== 'assets' || !!d.strata));
+}
 
 export function defaultTemplates(): Template[] {
   const mk = (a: [TemplateSection['key'], string, boolean][]) => a.map(([key, title, on]) => ({ key, title, on }));
@@ -166,13 +180,13 @@ export function defaultTemplates(): Template[] {
       id: 'tpl-std', name: 'Standard incident report', org: 'Northwind Group', logo: null, pattern: 'IR-{YYYY}-{SEQ}', seq: 42, pad: 3,
       classification: 'Confidential', accent: '#FF5A1F', isDefault: true,
       footer: 'Prepared by Northwind Security Operations. Do not forward outside the organisation.',
-      sections: mk([['summary', 'Executive summary', true], ['timeline', 'Timeline', true], ['sla', 'SLA performance', true], ['decisions', 'Key decisions', true], ['notes', 'Analyst notes', true], ['signoff', 'Sign-off', true]])
+      sections: mk([['summary', 'Executive summary', true], ['timeline', 'Timeline', true], ['sla', 'SLA performance', true], ['decisions', 'Key decisions', true], ['assets', 'Assets hit (Strata)', true], ['notes', 'Analyst notes', true], ['signoff', 'Sign-off', true]])
     },
     {
       id: 'tpl-reg', name: 'Regulator brief', org: 'Northwind Group', logo: null, pattern: '{PB}-REG-{YYMMDD}-{SEQ}', seq: 1, pad: 2,
       classification: 'Restricted · Legal review', accent: '#121413', isDefault: false,
       footer: 'Prepared for notification to the supervisory authority. Legal reviews it before submission.',
-      sections: mk([['summary', 'Summary of the breach', true], ['decisions', 'Containment decisions', true], ['timeline', 'Chronology', true], ['sla', 'Response times', false], ['notes', 'Analyst notes', false], ['signoff', 'Approval', true]])
+      sections: mk([['summary', 'Summary of the breach', true], ['decisions', 'Containment decisions', true], ['assets', 'Systems affected', true], ['timeline', 'Chronology', true], ['sla', 'Response times', false], ['notes', 'Analyst notes', false], ['signoff', 'Approval', true]])
     }
   ];
 }
@@ -191,13 +205,14 @@ export function toMarkdown(t: Template, r: Report): string {
   let m = `# ${oneLine(r.num)} — ${oneLine(d.name)}\n\n${oneLine(t.org)}${t.classification ? ' · ' + oneLine(t.classification) : ''}\n\n| Field | Value |\n|---|---|\n` +
     `| Incident | ${cell(d.ref)}${d.mode === 'exercise' ? ' (exercise)' : ''} |\n| Playbook | ${cell(d.pbCode)} ${cell(d.pbName)} v${cell(d.v)} |\n| Severity | ${cell(r.severity)} |\n| Status | ${reportStatusLabel(d.status)} |\n` +
     `| Declared | ${fmtLong(d.startedAt)} |\n| Duration | ${fmtDur(d.duration)} |\n| SLAs met | ${withSla.length ? met + ' / ' + withSla.length : '—'} |\n| Author | ${cell(r.author)} |\n\n`;
-  t.sections.filter(s => s.on).forEach((s, i) => {
+  reportSections(t, d).forEach((s, i) => {
     m += `## ${String(i + 1).padStart(2, '0')} ${oneLine(s.title)}\n\n`;
     if (s.key === 'summary') m += (r.summary || '') + '\n\n';
     else if (s.key === 'notes') m += (r.notes || '_No analyst notes._') + '\n\n';
     else if (s.key === 'timeline') m += '| UTC | T+ | Type | Event |\n|---|---|---|---|\n' + d.timeline.map(l => `| ${fmtHM(d.startedAt + l.t)} | ${fmtT(l.t).slice(2)} | ${LOG_LABEL[l.kind] || ''} | ${cell(l.msg)} |`).join('\n') + '\n\n';
     else if (s.key === 'sla') m += '| Step | Owner | Target | Actual | Status |\n|---|---|---|---|---|\n' + d.steps.map(x => `| ${cell(x.code)} ${cell(x.title)} | ${x.role ? cell(x.role) : '—'} | ${x.sla ? fmtSla(x.sla) : '—'} | ${fmtDur(x.dur)} | ${!x.sla ? '—' : x.breach ? 'Breached' : 'Met'} |`).join('\n') + '\n\n';
     else if (s.key === 'decisions') m += (d.decisions.map(x => `- **${oneLine(x.q)}** ${oneLine(x.a)}, then ${oneLine(x.to)}`).join('\n') || '_No decisions recorded._') + '\n\n';
+    else if (s.key === 'assets') m += (d.strata!.assets.length ? '| Asset | State |\n|---|---|\n' + d.strata!.assets.map(a => `| ${cell(a.name)} | ${a.state} |`).join('\n') : '_No asset marked on the map._') + `\n\nStrata IS: ${oneLine(d.strata!.site || '—')}\n\n`;
     else if (s.key === 'signoff') m += `- Prepared by: ${oneLine(r.author)}\n- Reviewed by:\n- Approved by:\n\n`;
   });
   return m + `---\n\n${t.footer}\n`;

@@ -17,7 +17,7 @@ import {
   type Playbook, type PlaybookSummary, type Incident, type Report, type Template, type Graph, type Severity, type Role, type Version,
   diff, validate, checkGraphShape, makeNode, makeEdge, layout, uid, clone, startIncident, advance as advanceInc, toggleTask, stopIncident,
   setSpeed, reportData, autoSummary, formatId, toMarkdown, toYaml, defaultPlaybooks, defaultTemplates, currentStep, stepCodes, incidentTime, EMPTY_GRAPH,
-  cleanStrata, type StrataLink
+  cleanStrata, withAllSections, type StrataLink
 } from '@muster/core';
 import { renderReportPdf } from '@muster/pdf';
 
@@ -245,8 +245,8 @@ async function mutate(id: string, fn: (inc: Incident, by: string) => void, rev?:
 async function templates(): Promise<Template[]> {
   const [all, seq] = await Promise.all([getAll('templates'), getDoc('meta/seq')]);
   return (all as (Template & { position?: number })[])
-    .map(t => ({ ...t, seq: typeof seq?.[t.id] === 'number' ? seq[t.id] : t.seq }))
-    .sort((a, b) => (Number(b.isDefault) - Number(a.isDefault)) || ((a.position || 0) - (b.position || 0)));
+    .sort((a, b) => (Number(b.isDefault) - Number(a.isDefault)) || ((a.position || 0) - (b.position || 0)))
+    .map(t => withAllSections({ ...t, seq: typeof seq?.[t.id] === 'number' ? seq[t.id] : t.seq }));
 }
 async function setSeq(id: string, value: number) {
   const ref = (await store()).doc('meta/seq');

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage, type RGB } from 'pdf-lib';
 import {
-  type Report, type Template, fmtDur, fmtLong, fmtSla, fmtHM, fmtT, LOG_LABEL, reportStatusLabel
+  type Report, type Template, fmtDur, fmtLong, fmtSla, fmtHM, fmtT, LOG_LABEL, reportStatusLabel, reportSections
 } from '@muster/core';
 
 const PT = 2.8346; // points per mm
@@ -176,6 +176,13 @@ export async function renderReportPdf(t: Template, r: Report): Promise<Uint8Arra
         y += 12 * PT; line(M, y, A4.w - M, FAINT, 0.5); y += 2 * PT;
       }
     },
+    assets: () => {
+      const a = d.strata?.assets || [];
+      if (!a.length) para('No asset marked on the map.', 9.5, MUT, f.ital);
+      else table([{ head: 'ASSET', width: CW - 90, font: 'mono' }, { head: 'STATE', width: 90, align: 'right', font: 'bold' }], a.map(x => [x.name, x.state]),
+        (ri, ci) => ci === 1 ? (a[ri].state === 'compromised' ? CRIT : a[ri].state === 'suspected' ? WARN : OK) : undefined);
+      y += 6; para(`Reported by Strata, IS ${d.strata?.site || '-'}.`, 8.5, MUT, f.reg);
+    },
     signoff: () => {
       ensure(30 * PT);
       const w = (CW - 12 * PT) / 3;
@@ -190,7 +197,7 @@ export async function renderReportPdf(t: Template, r: Report): Promise<Uint8Arra
     }
   };
 
-  t.sections.filter(s => s.on).forEach((s, i) => {
+  reportSections(t, d).forEach((s, i) => {
     ensure(24 * PT);
     text(String(i + 1).padStart(2, '0'), M, y, f.mono, 8, ACC);
     text(s.title, M + 9 * PT, y, f.bold, 12, INK);

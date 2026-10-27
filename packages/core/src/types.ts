@@ -156,6 +156,8 @@ export interface ReportData {
   decisions: { q: string; a: string; to: string }[];
   timeline: LogEntry[];
   notes: string;
+  /** The Strata IS and the assets as Strata last reported them; absent when the incident is not linked */
+  strata?: { site: string; assets: { id: string; name: string; state: StrataState }[] };
 }
 
 export interface Report {
@@ -171,7 +173,7 @@ export interface Report {
   data: ReportData;
 }
 
-export type SectionKey = 'summary' | 'timeline' | 'sla' | 'decisions' | 'notes' | 'signoff';
+export type SectionKey = 'summary' | 'timeline' | 'sla' | 'decisions' | 'assets' | 'notes' | 'signoff';
 
 export interface TemplateSection {
   key: SectionKey;

@@ -170,6 +170,7 @@ test('incidents: declare, conflicting moves, tasks, SLA, close, report, PDF', as
   assert.equal(new TextDecoder().decode(pdf.data.slice(0, 5)), '%PDF-');
   const md = await a.get(`/api/reports/${rep.id}/markdown`);
   assert.match(md.data, /SLA performance/);
+  assert.doesNotMatch(md.data, /Assets hit/, 'an incident not linked to Strata has no Strata section');
   assert.equal((await a.patch(`/api/reports/${rep.id}`, { severity: 'Extreme' })).status, 400);
   assert.equal((await a.patch(`/api/reports/${rep.id}`, { severity: 'Low', summary: 'Edited' })).data.summary, 'Edited');
 });
@@ -327,6 +328,14 @@ test('Strata: an incident linked to the map, steps that point at it, and what St
   const last = r.data.log.at(-1);
   assert.equal(last.msg, 'Strata: vpn-gw marked suspected');
   assert.match(last.by, / \(alice\)$/, 'the Strata user is named after the account Strata signs in with');
+  // the report lists the assets as Strata reported them, in Markdown and in the PDF
+  await a.post(`/api/incidents/${inc.id}/stop`);
+  const rep = (await a.post(`/api/incidents/${inc.id}/report`)).data;
+  assert.deepEqual(rep.data.strata, { site: 'lyon', assets: [{ id: 'lyo-vpn-gw', name: 'vpn-gw', state: 'suspected' }] });
+  const md = (await a.get(`/api/reports/${rep.id}/markdown`)).data;
+  assert.match(md, /## \d\d Assets hit \(Strata\)/);
+  assert.match(md, /\| vpn-gw \| suspected \|/);
+  assert.equal((await a.get(`/api/reports/${rep.id}/pdf`)).status, 200);
   // a draft with an unknown target is refused, a known one is kept
   const p = (await ed.get(`/api/playbooks/${vuln.id}`)).data;
   p.draft.nodes.find(n => n.id === 'exposure').targets = ['everything'];
