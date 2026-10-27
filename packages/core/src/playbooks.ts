@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import type { Graph, NodeType, Severity } from './types';
+import type { Graph, NodeType, PNode, Severity } from './types';
 import { layout, makeNode, makeEdge, clone } from './graph';
 
 type StepDef = [id: string, type: NodeType, title: string, phase: string, role?: string, sla?: number, desc?: string, checklist?: string[]];
@@ -24,9 +24,27 @@ export interface SeedPlaybook {
 
 const D = 'Lessons learned';
 
+// What each step acts on in Strata, when the incident is linked to its map (see strata.ts)
+type Aim = Record<string, { targets?: string[]; effects?: PNode['effects'] }>;
+function aim(g: Graph, a: Aim): Graph {
+  g.nodes.forEach(n => { const x = a[n.id]; if (x?.targets) n.targets = x.targets; if (x?.effects) n.effects = x.effects; });
+  return g;
+}
+const RANSOMWARE_AIM: Aim = {
+  triage: { targets: ['affected', 'contacts:affected'] },
+  encrypt: { targets: ['compromised'] },
+  isolate: { targets: ['affected', 'flows:affected'] },
+  crisis: { targets: ['business:affected', 'contacts:is'] },
+  forensic: { targets: ['affected', 'reach:affected'] },
+  backup: { targets: ['role:backup', 'flows:role:backup'] },
+  restore: { targets: ['compromised', 'consumers:compromised'] },
+  rebuild: { targets: ['compromised', 'type:dc'] },
+  watch: { targets: ['affected', 'role:SIEM'] }
+};
+
 /* 1 — Ransomware: ships with three versions and an unpublished change, to show history and diffs. */
 function ransomware(): SeedPlaybook {
-  const v3 = build([
+  const v3 = aim(build([
     ['start', 'start', 'Alert received', 'Detection'],
     ['triage', 'action', 'Triage the alert', 'Detection', 'L1 Analyst', 15, 'Confirm ransomware activity and rule out a false positive before anyone escalates.', ['Check the alert source (EDR, SIEM, user report)', 'List affected hosts and accounts', 'Open the incident ticket']],
     ['encrypt', 'decision', 'Encryption in progress?', 'Detection', 'L1 Analyst', 5, 'Are files being encrypted or mass-renamed right now?'],
@@ -39,7 +57,7 @@ function ransomware(): SeedPlaybook {
     ['watch', 'action', 'Heightened monitoring', 'Detection', 'L1 Analyst', 60, 'No encryption observed. Monitor closely and document.', ['Create a detection rule for the IOCs', 'Watch the hosts for 24 h']],
     ['review', 'action', 'Post-incident review', D, 'IR Lead', 120, '', ['Write the timeline', 'List corrective actions', 'Update this playbook']],
     ['end', 'end', 'Incident closed', D]
-  ], [['start', 'triage'], ['triage', 'encrypt'], ['encrypt', 'isolate', 'Yes'], ['encrypt', 'watch', 'No'], ['isolate', 'crisis'], ['crisis', 'forensic'], ['forensic', 'backup'], ['backup', 'restore', 'Yes'], ['backup', 'rebuild', 'No'], ['restore', 'review'], ['rebuild', 'review'], ['watch', 'review'], ['review', 'end']]);
+  ], [['start', 'triage'], ['triage', 'encrypt'], ['encrypt', 'isolate', 'Yes'], ['encrypt', 'watch', 'No'], ['isolate', 'crisis'], ['crisis', 'forensic'], ['forensic', 'backup'], ['backup', 'restore', 'Yes'], ['backup', 'rebuild', 'No'], ['restore', 'review'], ['rebuild', 'review'], ['watch', 'review'], ['review', 'end']]), RANSOMWARE_AIM);
   const v2 = clone(v3);
   v2.nodes.find(n => n.id === 'crisis')!.checklist.pop();
   v2.nodes.find(n => n.id === 'review')!.checklist.pop();
@@ -92,7 +110,7 @@ function one(code: string, name: string, category: string, severity: Severity, d
 
 const accountCompromise = () => one('PB-003', 'Compromised account', 'Identity', 'High',
   'Suspicious sign-in or confirmed takeover of a user account. Cut access, scope what the attacker did, restore safely.',
-  '2026-04-02T09:00:00Z', 'Camille R.', build([
+  '2026-04-02T09:00:00Z', 'Camille R.', aim(build([
     ['start', 'start', 'Suspicious sign-in alert', 'Detection'],
     ['triage', 'action', 'Review the sign-in', 'Detection', 'L1 Analyst', 15, 'Look at location, device, client and MFA events around the alert.', ['Check impossible travel and unfamiliar devices', 'Review MFA prompts and approvals', 'Confirm with the user by phone, not email']],
     ['confirmed', 'decision', 'Compromise confirmed?', 'Detection', 'L1 Analyst', 10],
@@ -104,7 +122,7 @@ const accountCompromise = () => one('PB-003', 'Compromised account', 'Identity',
     ['restore', 'action', 'Restore and monitor', 'Recovery', 'L2 Analyst', 60, '', ['Re-enable with new credentials and MFA', 'Add a 14-day monitoring rule', 'Brief the user']],
     ['review', 'action', 'Post-incident review', D, 'IR Lead', 60, '', ['Record the root cause', 'List corrective actions']],
     ['end', 'end', 'Incident closed', D]
-  ], [['start', 'triage'], ['triage', 'confirmed'], ['confirmed', 'contain', 'Yes'], ['confirmed', 'fp', 'No'], ['fp', 'end'], ['contain', 'scope'], ['scope', 'priv'], ['priv', 'escalate', 'Yes'], ['priv', 'restore', 'No'], ['escalate', 'restore'], ['restore', 'review'], ['review', 'end']]));
+  ], [['start', 'triage'], ['triage', 'confirmed'], ['confirmed', 'contain', 'Yes'], ['confirmed', 'fp', 'No'], ['fp', 'end'], ['contain', 'scope'], ['scope', 'priv'], ['priv', 'escalate', 'Yes'], ['priv', 'restore', 'No'], ['escalate', 'restore'], ['restore', 'review'], ['review', 'end']]), { triage: { targets: ['affected', 'contacts:affected'] }, confirmed: { targets: ['suspected'], effects: { Yes: ['compromised', 'suspected'] } }, contain: { targets: ['compromised', 'flows:compromised'] }, scope: { targets: ['compromised', 'reach:compromised'] }, escalate: { targets: ['business:affected', 'contacts:is'] }, restore: { targets: ['compromised'] } }));
 
 const ceoFraud = () => one('PB-004', 'CEO fraud and payment diversion', 'Fraud', 'High',
   'Urgent payment request or changed bank details from a fake executive or supplier. Stop the money first.',
@@ -139,7 +157,7 @@ const dataBreach = () => one('PB-005', 'Personal data breach', 'Data protection'
 
 const malware = () => one('PB-006', 'Malware on an endpoint', 'Malware', 'Medium',
   'EDR or antivirus alert on a workstation or server. Check execution, contain, hunt for spread.',
-  '2026-03-28T08:30:00Z', 'Noah L.', build([
+  '2026-03-28T08:30:00Z', 'Noah L.', aim(build([
     ['start', 'start', 'EDR malware alert', 'Detection'],
     ['triage', 'action', 'Triage the detection', 'Detection', 'L1 Analyst', 15, '', ['Check the file hash reputation', 'Identify the user and host', 'Check whether the EDR blocked it']],
     ['ran', 'decision', 'Did the malware run?', 'Detection', 'L1 Analyst', 10],
@@ -152,7 +170,7 @@ const malware = () => one('PB-006', 'Malware on an endpoint', 'Malware', 'Medium
     ['reimage', 'action', 'Reimage affected hosts', 'Recovery', 'IT support', 240, '', ['Back up user data', 'Reimage from the standard image', 'Reset user credentials']],
     ['review', 'action', 'Post-incident review', D, 'IR Lead', 60, '', ['Identify the delivery vector', 'List corrective actions']],
     ['end', 'end', 'Incident closed', D]
-  ], [['start', 'triage'], ['triage', 'ran'], ['ran', 'isolate', 'Yes'], ['ran', 'clean', 'No'], ['clean', 'end'], ['isolate', 'analyse'], ['analyse', 'hunt'], ['hunt', 'spread'], ['spread', 'escalate', 'Yes'], ['spread', 'reimage', 'No'], ['escalate', 'reimage'], ['reimage', 'review'], ['review', 'end']]));
+  ], [['start', 'triage'], ['triage', 'ran'], ['ran', 'isolate', 'Yes'], ['ran', 'clean', 'No'], ['clean', 'end'], ['isolate', 'analyse'], ['analyse', 'hunt'], ['hunt', 'spread'], ['spread', 'escalate', 'Yes'], ['spread', 'reimage', 'No'], ['escalate', 'reimage'], ['reimage', 'review'], ['review', 'end']]), { triage: { targets: ['affected', 'contacts:affected'] }, ran: { targets: ['suspected'], effects: { Yes: ['compromised', 'suspected'] } }, isolate: { targets: ['compromised', 'flows:compromised'] }, analyse: { targets: ['compromised'] }, hunt: { targets: ['reach:compromised'] }, spread: { targets: ['reach:compromised'] }, escalate: { targets: ['business:affected', 'contacts:is'] }, reimage: { targets: ['compromised', 'consumers:compromised'] } }));
 
 const ddos = () => one('PB-007', 'DDoS attack', 'Availability', 'High',
   'A public service slows down or goes offline under abnormal traffic. Confirm, mitigate upstream, keep customers informed.',
@@ -199,7 +217,7 @@ const insider = () => one('PB-009', 'Insider threat', 'Insider', 'High',
 
 const vuln = () => one('PB-010', 'Exploited critical vulnerability', 'Vulnerability', 'Critical',
   'A critical flaw in a product you run is exploited in the wild. Find exposure, mitigate, hunt for compromise.',
-  '2026-08-21T07:45:00Z', 'Noah L.', build([
+  '2026-08-21T07:45:00Z', 'Noah L.', aim(build([
     ['start', 'start', 'Critical vulnerability exploited', 'Detection'],
     ['exposure', 'action', 'Identify exposed assets', 'Detection', 'L2 Analyst', 60, '', ['Match the affected product and versions', 'Check internet exposure', 'List system owners']],
     ['found', 'decision', 'Exposed assets found?', 'Detection', 'L2 Analyst', 10],
@@ -210,7 +228,7 @@ const vuln = () => one('PB-010', 'Exploited critical vulnerability', 'Vulnerabil
     ['major', 'escalation', 'Open a major incident', 'Eradication', 'IR Lead', 30, '', ['Start the intrusion or ransomware playbook', 'Preserve evidence']],
     ['review', 'action', 'Post-incident review', D, 'IR Lead', 60, '', ['Measure time to patch', 'Review asset inventory gaps']],
     ['end', 'end', 'Incident closed', D]
-  ], [['start', 'exposure'], ['exposure', 'found'], ['found', 'mitigate', 'Yes'], ['found', 'doc', 'No'], ['doc', 'end'], ['mitigate', 'hunt'], ['hunt', 'comp'], ['comp', 'major', 'Yes'], ['comp', 'review', 'No'], ['major', 'review'], ['review', 'end']]));
+  ], [['start', 'exposure'], ['exposure', 'found'], ['found', 'mitigate', 'Yes'], ['found', 'doc', 'No'], ['doc', 'end'], ['mitigate', 'hunt'], ['hunt', 'comp'], ['comp', 'major', 'Yes'], ['comp', 'review', 'No'], ['major', 'review'], ['review', 'end']]), { exposure: { targets: ['vuln:{cve}', 'contacts:vuln:{cve}'] }, found: { targets: ['vuln:{cve}'], effects: { Yes: ['suspected', 'vuln:{cve}'] } }, mitigate: { targets: ['vuln:{cve}', 'flows:vuln:{cve}'] }, hunt: { targets: ['vuln:{cve}', 'reach:vuln:{cve}'] }, comp: { targets: ['vuln:{cve}'], effects: { Yes: ['compromised', 'vuln:{cve}'] } }, major: { targets: ['business:affected', 'contacts:affected'] } }));
 
 export function defaultPlaybooks(): SeedPlaybook[] {
   return [ransomware(), phishing(), accountCompromise(), ceoFraud(), dataBreach(), malware(), ddos(), lostDevice(), insider(), vuln()];

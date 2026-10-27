@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import { checkTargets } from './strata';
 import type { Graph, PNode, PEdge, NodeType } from './types';
 
 export const NODE_W = 220;
@@ -198,6 +199,8 @@ export function checkGraphShape(g: unknown): string | null {
     if (!Array.isArray(n.checklist) || n.checklist.some(c => typeof c !== 'string' || c.length > 500)) return `Invalid checklist on ${n.id}`;
     if (typeof n.sla !== 'number' || n.sla < 0 || n.sla > 525600) return `Invalid SLA on ${n.id}`;
     for (const k of ['phase', 'role', 'desc'] as const) if (typeof n[k] !== 'string' || n[k].length > 4000) return `Invalid ${k} on ${n.id}`;
+    const t = checkTargets(n);
+    if (t) return t;
   }
   const eids = new Set<string>();
   for (const e of gr.edges) {

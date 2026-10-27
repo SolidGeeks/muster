@@ -27,7 +27,7 @@ function log(inc: Incident, t: number, msg: string, kind: LogKind, by?: string) 
 /** Create an incident on a frozen playbook version and move past Start. */
 export function startIncident(params: {
   id: string; ref: string; name: string; playbookId: string; pbCode: string; pbName: string; v: number; graph: Graph;
-  mode: 'live' | 'exercise'; speed: number; severity: Incident['severity']; by: string; now?: number;
+  mode: 'live' | 'exercise'; speed: number; severity: Incident['severity']; by: string; now?: number; strata?: Incident['strata'];
 }): Incident {
   const now = params.now ?? Date.now();
   const st = params.graph.nodes.find(n => n.type === 'start');
@@ -36,7 +36,8 @@ export function startIncident(params: {
     id: params.id, ref: params.ref, name: params.name, playbookId: params.playbookId, pbCode: params.pbCode, pbName: params.pbName,
     v: params.v, graph: params.graph, mode: params.mode, severity: params.severity, status: 'active', startedAt: now,
     clock: { base: 0, anchor: now, speed: params.mode === 'exercise' ? params.speed : 1 },
-    steps: [{ id: st.id, start: 0 }], checks: {}, log: [], notes: '', reportId: null, createdBy: params.by
+    steps: [{ id: st.id, start: 0 }], checks: {}, log: [], notes: '', reportId: null, createdBy: params.by,
+    ...(params.strata ? { strata: params.strata } : {})
   };
   log(inc, 0, `${params.mode === 'exercise' ? 'Exercise' : 'Incident'} declared on ${params.pbName} v${params.v}`, 'info', params.by);
   const first = params.graph.edges.find(e => e.from === st.id);
@@ -212,6 +213,8 @@ export function toYaml(p: { code: string; name: string; category?: string }, g: 
     if (n.sla) y += `    sla_minutes: ${n.sla}\n`;
     if (n.desc) y += `    instructions: ${q(n.desc)}\n`;
     if (n.checklist.length) y += `    checklist:\n` + n.checklist.map(c => `      - ${q(c)}\n`).join('');
+    if (n.targets?.length) y += `    targets: [${n.targets.map(q).join(', ')}]\n`;
+    if (n.effects && Object.keys(n.effects).length) y += `    effects:\n` + Object.entries(n.effects).map(([k, [st, sel]]) => `      ${q(k)}: [${st}, ${q(sel)}]\n`).join('');
     const o = g.edges.filter(e => e.from === n.id);
     if (o.length) y += `    next:\n` + o.map(e => `      - to: ${e.to}` + (e.label ? `\n        when: ${q(e.label)}` : '') + '\n').join('');
   }

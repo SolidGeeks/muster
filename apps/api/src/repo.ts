@@ -78,7 +78,8 @@ export function listIncidents(s: Store) {
       id: inc.id, ref: inc.ref, name: inc.name, pbCode: inc.pbCode, pbName: inc.pbName, v: inc.v, mode: inc.mode, severity: inc.severity,
       status: inc.status, startedAt: inc.startedAt, elapsed, createdBy: inc.createdBy, reportId: inc.reportId || null,
       current: node && inc.status === 'active' ? { code: codes[node.id], title: node.title, role: node.role, overdue: !!(node.sla && stepElapsed > node.sla * 60000) } : null,
-      speed: inc.clock.speed, rev: r.rev
+      speed: inc.clock.speed, rev: r.rev,
+      strata: inc.strata ? { site: inc.strata.site, assets: inc.strata.assets, params: inc.strata.params } : null
     };
   });
 }

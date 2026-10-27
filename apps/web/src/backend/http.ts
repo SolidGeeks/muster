@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import type { Playbook, PlaybookSummary, Incident, Report, Template, User, Graph, Severity, Role } from '@muster/core';
+import type { Playbook, PlaybookSummary, Incident, Report, Template, User, Graph, Severity, Role, StrataLink } from '@muster/core';
 
 export class ApiError extends Error {
   constructor(public status: number, message: string, public data: any = {}) { super(message); }
@@ -29,7 +29,10 @@ export interface IncidentRow {
   id: string; ref: string; name: string; pbCode: string; pbName: string; v: number; mode: 'live' | 'exercise'; severity: Severity;
   status: Incident['status']; startedAt: number; elapsed: number; createdBy: string; reportId: string | null; speed: number;
   current: { code: string; title: string; role: string; overdue: boolean } | null; rev: number;
+  strata: Pick<StrataLink, 'site' | 'assets' | 'params'> | null;
 }
+/** What the declare form sends to link an incident to Strata */
+export type StrataInput = { site?: string; assets?: string[]; params?: Record<string, string> } | null;
 export interface ReportRow { id: string; num: string; name: string; ref: string; created: string; severity: Severity; author: string; templateId: string; incidentId: string; mode: 'live' | 'exercise' }
 export interface AuditRow { id: number; at: string; user: string; action: string; target: string; detail: string }
 
@@ -52,7 +55,7 @@ export const api = {
 
   incidents: () => call<IncidentRow[]>('GET', '/api/incidents'),
   incident: (id: string) => call<IncidentFull>('GET', `/api/incidents/${id}`),
-  declare: (b: { playbookId: string; v: number; name: string; mode: 'live' | 'exercise'; speed: number; severity: Severity }) => call<IncidentFull>('POST', '/api/incidents', b),
+  declare: (b: { playbookId: string; v: number; name: string; mode: 'live' | 'exercise'; speed: number; severity: Severity; strata?: StrataInput }) => call<IncidentFull>('POST', '/api/incidents', b),
   advance: (id: string, edgeId: string, rev: number) => call<IncidentFull>('POST', `/api/incidents/${id}/advance`, { edgeId, rev }),
   task: (id: string, nodeId: string, index: number, done: boolean) => call<IncidentFull>('POST', `/api/incidents/${id}/tasks`, { nodeId, index, done }),
   notes: (id: string, notes: string) => call<IncidentFull>('POST', `/api/incidents/${id}/notes`, { notes }),

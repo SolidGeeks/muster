@@ -128,9 +128,28 @@ export function IncidentRun({ id }: { id: string }) {
               <ol className="rlog">{inc.log.slice().reverse().map((l, i) => (
                 <li key={i} className={l.kind}><time>{fmtT(l.t)}</time><span className="lv">{LOG_LABEL[l.kind]}</span><span className="msg">{l.msg}{l.by && <span className="by"> · {N(l.by)}</span>}</span></li>))}
               </ol></div>
+            {(inc.strata || n.targets?.length) && <StrataBlock inc={inc} node={done ? null : n} />}
             <Notes inc={inc} readOnly={!canRun} onSaved={apply} />
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// The incident as Strata sees it: the IS, the assets and their state on the map, what the current step points at
+const STATE_TAG: Record<string, string> = { compromised: 'crit', suspected: 'warn', contained: 'ok' };
+function StrataBlock({ inc, node }: { inc: IncidentFull; node: IncidentFull['graph']['nodes'][number] | null }) {
+  const s = inc.strata, marks = Object.entries(s?.marks || {}), name = (id: string) => s?.names[id] || id;
+  const waiting = s ? s.assets.filter(a => !marks.some(([id]) => id === a || name(id) === a)) : [];
+  return (
+    <div className="blk"><div className="blk-h"><h4>Strata</h4><span className="code">{s?.site ? `IS ${s.site}` : 'not linked'}</span></div>
+      <div className="strata-b">
+        {marks.length > 0 && <ul className="strata-assets">{marks.map(([id, st]) => <li key={id}><b>{name(id)}</b><span className={'tag ' + STATE_TAG[st]}><i />{st}</span></li>)}</ul>}
+        {waiting.length > 0 && <p className="foot">Declared, not yet opened on the map: {waiting.join(', ')}</p>}
+        {s && Object.keys(s.params).length > 0 && <p className="foot">Parameters: {Object.entries(s.params).map(([k, v]) => `${k} = ${v}`).join(' · ')}</p>}
+        {node?.targets?.length ? <p className="foot">This step points Strata at <span className="mono">{node.targets.join(', ')}</span></p> : null}
+        {!s && <p className="foot">Declare the incident with a Strata IS to see it on the map.</p>}
       </div>
     </div>
   );
