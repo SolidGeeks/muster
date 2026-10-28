@@ -87,6 +87,16 @@ gh attestation verify oci://ghcr.io/solidgeeks/muster:1.0.1 --owner SolidGeeks
 
 It must print `Verification succeeded!`. If it fails, do not run the image, and report it (see [SECURITY.md](SECURITY.md)).
 
+## Working with Strata
+
+[Strata](https://github.com/SolidGeeks/strata) maps your information systems. Linked to Muster, a response runs on the map: the assets hit, who to call, the flows to cut, what depends on them.
+
+1. In Muster, create an account for Strata with the **analyst** role (**Admin › Users**).
+2. In Strata, set `MUSTER_URL` (how the Strata server reaches Muster), `MUSTER_USER` and `MUSTER_PASSWORD`.
+3. Declare an incident and open **Link to Strata**: the Strata IS id, the assets hit (names or Strata ids) and, for the *Exploited critical vulnerability* playbook, the CVE.
+
+Strata lists the incident in the incident sheet of that IS. Opened there, it marks the assets, and each step shows what it acts on: the step's **Strata targets** (`affected`, `flows:affected`, `vuln:{cve}`, `role:backup`, `type:dc`, `reach:…`, `consumers:…`, `business:…`, `contacts:…`), set in the editor. Answering a decision in either app moves the response in both; a decision can also mark assets in Strata (`effects`, shipped on PB-003, PB-006 and PB-010). What Strata does (assets marked, flows cut) goes to the timeline, the incident page shows the assets and their state, and the report gets an **Assets hit (Strata)** section (shown only for linked incidents; templates saved before it get it too, and can hide or rename it). A decision answered in Muster marks the assets in Strata as soon as someone allowed to change the incident has that IS open in Strata: nothing is lost in between. The shipped Ransomware, Compromised account, Malware and Exploited critical vulnerability playbooks already carry their targets; the YAML export includes them.
+
 ## How it is built
 
 ```

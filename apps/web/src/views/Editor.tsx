@@ -378,6 +378,13 @@ function Inspector({ pb, setPb, g, sel, setSel, readOnly, val, updateNode, commi
             {!ro && <button className="addrow" onClick={() => { updateNode(n.id, { checklist: [...n.checklist, ''] }, true); setTimeout(() => { const ins = document.querySelectorAll<HTMLInputElement>('.cl input'); ins[ins.length - 1]?.focus(); }, 0); }}>Add task</button>}
           </section>
         )}
+        {!term && (
+          <section className="grp"><div className="grp-h"><h4>Strata targets</h4><span>{plural((n.targets || []).length, 'selector')}</span></div>
+            <label className="field">What this step acts on, one selector per line<textarea className="inp mono" rows={2} disabled={ro} value={(n.targets || []).join('\n')} placeholder={'affected\nflows:affected'}
+              onFocus={snapshot} onChange={e => { const t = e.target.value.split('\n').map(x => x.trim()).filter(Boolean); updateNode(n.id, { targets: t.length ? t : undefined }); }} /></label>
+            <p className="foot">Strata resolves them on its map: affected, compromised, id:&lt;asset&gt;, type:dc, role:backup, vuln:{'{cve}'}, exposed:internet, and reach:, consumers:, flows:, business:, contacts: around another selector.</p>
+          </section>
+        )}
         {n.type !== 'end' && (
           <section className="grp"><div className="grp-h"><h4>{n.type === 'decision' ? 'Answers' : 'Next'}</h4><span>{plural(outs.length, 'route')}</span></div>
             {outs.length ? <div className="outs">{outs.map(e => { const t = g.nodes.find(x => x.id === e.to); return (

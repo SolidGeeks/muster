@@ -16,7 +16,8 @@
 import {
   type Playbook, type PlaybookSummary, type Incident, type Report, type Template, type Graph, type Severity, type Role, type Version,
   diff, validate, checkGraphShape, makeNode, makeEdge, layout, uid, clone, startIncident, advance as advanceInc, toggleTask, stopIncident,
-  setSpeed, reportData, autoSummary, formatId, toMarkdown, toYaml, defaultPlaybooks, defaultTemplates, currentStep, stepCodes, incidentTime, EMPTY_GRAPH
+  setSpeed, reportData, autoSummary, formatId, toMarkdown, toYaml, defaultPlaybooks, defaultTemplates, currentStep, stepCodes, incidentTime, EMPTY_GRAPH,
+  cleanStrata, withAllSections, type StrataLink
 } from '@muster/core';
 import { renderReportPdf } from '@muster/pdf';
 
@@ -31,7 +32,9 @@ export interface IncidentRow {
   id: string; ref: string; name: string; pbCode: string; pbName: string; v: number; mode: 'live' | 'exercise'; severity: Severity;
   status: Incident['status']; startedAt: number; elapsed: number; createdBy: string; reportId: string | null; speed: number;
   current: { code: string; title: string; role: string; overdue: boolean } | null; rev: number;
+  strata: Pick<StrataLink, 'site' | 'assets' | 'params'> | null;
 }
+export type StrataInput = { site?: string; assets?: string[]; params?: Record<string, string> } | null;
 export interface ReportRow { id: string; num: string; name: string; ref: string; created: string; severity: Severity; author: string; templateId: string; incidentId: string; mode: 'live' | 'exercise' }
 export interface AuditRow { id: number; at: string; user: string; action: string; target: string; detail: string }
 
@@ -204,13 +207,16 @@ async function incidents(): Promise<IncidentRow[]> {
     return {
       id: inc.id, ref: inc.ref, name: inc.name, pbCode: inc.pbCode, pbName: inc.pbName, v: inc.v, mode: inc.mode, severity: inc.severity, status: inc.status,
       startedAt: inc.startedAt, elapsed, createdBy: inc.createdBy, reportId: inc.reportId || null, speed: inc.clock.speed, rev: inc.rev,
-      current: node && inc.status === 'active' ? { code: codes[node.id], title: node.title, role: node.role, overdue: !!(node.sla && stepElapsed > node.sla * 60000) } : null
+      current: node && inc.status === 'active' ? { code: codes[node.id], title: node.title, role: node.role, overdue: !!(node.sla && stepElapsed > node.sla * 60000) } : null,
+      strata: inc.strata ? { site: inc.strata.site, assets: inc.strata.assets, params: inc.strata.params } : null
     };
   });
 }
 async function incident(id: string): Promise<IncidentFull> { return { ...(await incDoc(id)), serverNow: Date.now() }; }
-async function declare(b: { playbookId: string; v: number; name: string; mode: 'live' | 'exercise'; speed: number; severity: Severity }): Promise<IncidentFull> {
+async function declare(b: { playbookId: string; v: number; name: string; mode: 'live' | 'exercise'; speed: number; severity: Severity; strata?: StrataInput }): Promise<IncidentFull> {
   if (!b.name?.trim()) throw new ApiError(400, 'Incident name is required');
+  let strata;
+  try { strata = cleanStrata(b.strata); } catch (e) { throw new ApiError(400, (e as Error).message); }
   const ver = await getDoc(`playbooks/${b.playbookId}/versions/v${b.v}`);
   const p = await pbDoc(b.playbookId);
   if (!ver) throw new ApiError(422, 'Publish this playbook before running it');
@@ -218,7 +224,7 @@ async function declare(b: { playbookId: string; v: number; name: string; mode: '
   const n = await bump('meta/counters', 'incident-' + y, 1);
   const inc = startIncident({
     id: uid('inc_'), ref: `INC-${y}-${String(n).padStart(4, '0')}`, name: b.name.trim().slice(0, 160), playbookId: p.id, pbCode: p.code, pbName: p.name,
-    v: ver.v, graph: ver.graph, mode: b.mode, speed: b.mode === 'exercise' ? Math.min(600, Math.max(1, b.speed || 60)) : 1, severity: b.severity, by: await meId()
+    v: ver.v, graph: ver.graph, mode: b.mode, speed: b.mode === 'exercise' ? Math.min(600, Math.max(1, b.speed || 60)) : 1, severity: b.severity, by: await meId(), strata
   });
   await setDoc(`incidents/${inc.id}`, { ...inc, rev: 1 } as any);
   return incident(inc.id);
@@ -239,8 +245,8 @@ async function mutate(id: string, fn: (inc: Incident, by: string) => void, rev?:
 async function templates(): Promise<Template[]> {
   const [all, seq] = await Promise.all([getAll('templates'), getDoc('meta/seq')]);
   return (all as (Template & { position?: number })[])
-    .map(t => ({ ...t, seq: typeof seq?.[t.id] === 'number' ? seq[t.id] : t.seq }))
-    .sort((a, b) => (Number(b.isDefault) - Number(a.isDefault)) || ((a.position || 0) - (b.position || 0)));
+    .sort((a, b) => (Number(b.isDefault) - Number(a.isDefault)) || ((a.position || 0) - (b.position || 0)))
+    .map(t => withAllSections({ ...t, seq: typeof seq?.[t.id] === 'number' ? seq[t.id] : t.seq }));
 }
 async function setSeq(id: string, value: number) {
   const ref = (await store()).doc('meta/seq');

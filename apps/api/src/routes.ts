@@ -15,7 +15,7 @@ import { renderReportPdf } from '@muster/pdf';
 import {
   type Role, type Graph, type Template, type Report, type Incident, type Severity, type SectionKey,
   uid, clone, validate, checkGraphShape, makeNode, makeEdge, layout, startIncident, advance, toggleTask, stopIncident, setSpeed,
-  reportData, autoSummary, formatId, toMarkdown, toYaml, SEVERITIES, SECTION_LABEL
+  reportData, autoSummary, formatId, toMarkdown, toYaml, SEVERITIES, SECTION_LABEL, cleanStrata, strataLog
 } from '@muster/core';
 
 export interface Config { demo: boolean; secureCookies: boolean }
@@ -229,8 +229,10 @@ export function buildRouter(store: Store, cfg: Config): Router {
     const mode = ctx.body.mode === 'exercise' ? 'exercise' : 'live';
     const speed = mode === 'exercise' ? int(ctx.body.speed ?? 60, 'Speed', 1, 600) : 1;
     const severity = ctx.body.severity ? oneOf(ctx.body.severity, 'Severity', SEVERITIES) : p.severity;
+    let strata;
+    try { strata = cleanStrata(ctx.body.strata); } catch (e) { throw new HttpError(400, (e as Error).message); }
     const inc = store.tx(() => {
-      const i = startIncident({ id: uid('inc_'), ref: incidentRef(store), name, playbookId: p.id, pbCode: p.code, pbName: p.name, v: ver.v, graph: ver.graph, mode, speed, severity, by: u.name });
+      const i = startIncident({ id: uid('inc_'), ref: incidentRef(store), name, playbookId: p.id, pbCode: p.code, pbName: p.name, v: ver.v, graph: ver.graph, mode, speed, severity, by: u.name, strata });
       saveIncident(store, i, true);
       return i;
     });
@@ -269,6 +271,17 @@ export function buildRouter(store: Store, cfg: Config): Router {
     if (inc.mode !== 'exercise') throw new HttpError(422, 'Only exercises can change speed');
     if (inc.status !== 'active') throw new HttpError(422, 'This exercise is over');
     setSpeed(inc, int(ctx.body.speed, 'Speed', 1, 600));
+  }));
+  // Strata reports back: the state of the assets on its map (marks), their names, the IS it opened the incident
+  // on, and what it did there (log entries, kept in the timeline and the report)
+  r.post('/api/incidents/:id/strata', ctx => mutate(ctx, (inc, by) => {
+    try { inc.strata = cleanStrata({ site: ctx.body.site, marks: ctx.body.marks, names: ctx.body.names, assets: ctx.body.assets, params: ctx.body.params }, inc.strata); }
+    catch (e) { throw new HttpError(400, (e as Error).message); }
+    const log = Array.isArray(ctx.body.log) ? ctx.body.log.slice(0, 50) : [];
+    for (const l of log) {
+      const msg = str(l?.msg, 'Log entry', 500, { min: 1 });
+      strataLog(inc, msg, (['info', 'ok', 'warn', 'crit', 'dec'] as const).find(k => k === l?.kind) || 'info', typeof l?.by === 'string' && l.by ? `${by} (${l.by.slice(0, 60)})` : by);
+    }
   }));
   r.post('/api/incidents/:id/stop', ctx => mutate(ctx, (inc, by) => stopIncident(inc, by), 'incident.stop'));
   r.post('/api/incidents/:id/report', ctx => {

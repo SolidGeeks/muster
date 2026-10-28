@@ -4,6 +4,12 @@ All notable changes to Muster. Versions follow [Semantic Versioning](https://sem
 
 ## [Unreleased]
 
+### Added
+- **Link to Strata**, the map of the information systems. An incident can be declared with a Strata IS, the assets hit and parameters (a CVE), under **Link to Strata** in the declare form. Strata, signed in with an analyst account, opens it on its map and runs it from there: answers and tasks go both ways. It reports back the state of the assets (compromised, suspected, contained) and what it did, which lands in the timeline as `Strata: …` entries, written by its account with the name of the person on the map. The incident page shows a **Strata** block with the assets and their state, and what the current step points at.
+- **Strata targets on playbook steps**: selectors that say what a step acts on (`affected`, `flows:affected`, `vuln:{cve}`, `role:backup`, `type:dc`, `reach:…`, `consumers:…`, `business:…`, `contacts:…`), edited in the step inspector and checked when a draft is saved, and **effects** on decisions (an answer marks assets in Strata). PB-001, PB-003, PB-006 and PB-010 ship with them. The YAML export writes both.
+- **Assets hit (Strata)** in the incident report (screen, PDF, Markdown): each asset with its state, as Strata last reported it. Shown only for incidents linked to Strata; existing templates get the section after *Key decisions*, and can hide or rename it like the others.
+- API: `strata` on `POST /api/incidents` and in the incident list, and `POST /api/incidents/{id}/strata` (analyst) for what Strata reports back.
+
 ### Changed
 - Built with TypeScript 7 and esbuild 0.28. The app's code is the same; the next image is assembled by the new tools, checked by the browser walk-through and the image test.
 

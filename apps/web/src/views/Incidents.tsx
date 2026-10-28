@@ -75,6 +75,9 @@ export function DeclareModal({ playbookId, onClose }: { playbookId?: string; onC
   const [severity, setSeverity] = useState<Severity>('High');
   const [mode, setMode] = useState<'live' | 'exercise'>('live');
   const [speed, setSpeed] = useState(60);
+  const [site, setSite] = useState('');
+  const [assets, setAssets] = useState('');
+  const [cve, setCve] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const published = (list.data || []).filter(p => p.liveVersion);
@@ -90,7 +93,9 @@ export function DeclareModal({ playbookId, onClose }: { playbookId?: string; onC
   const submit = async () => {
     setBusy(true); setErr(null);
     try {
-      const inc = await api.declare({ playbookId: pid, v, name: name.trim(), mode, speed, severity });
+      const list = assets.split(/[,\n]/).map(s => s.trim()).filter(Boolean);
+      const strata = site.trim() || list.length || cve.trim() ? { site: site.trim(), assets: list, params: (cve.trim() ? { cve: cve.trim() } : {}) as Record<string, string> } : null;
+      const inc = await api.declare({ playbookId: pid, v, name: name.trim(), mode, speed, severity, strata });
       toast(`${inc.ref} declared`);
       go(`incidents/${inc.id}`);
     } catch (e) { setErr((e as Error).message); setBusy(false); }
@@ -119,6 +124,15 @@ export function DeclareModal({ playbookId, onClose }: { playbookId?: string; onC
           <label className="field">Clock speed<select className="inp" value={speed} onChange={e => setSpeed(Number(e.target.value))}>{[1, 10, 60, 300].map(s => <option key={s} value={s}>×{s}{s === 60 ? ' (one minute per second)' : ''}</option>)}</select></label>
         ) : <div className="field">Clock<div className="inp" style={{ display: 'flex', alignItems: 'center', color: 'var(--muted)' }}>Real time</div></div>}
       </div>
+      <details className="strata-link">
+        <summary>Link to Strata (optional)</summary>
+        <p className="foot">Strata opens the incident on its map: the assets you name are marked compromised, and each playbook step points at the assets, flows and contacts it acts on.</p>
+        <div className="row2">
+          <label className="field">Strata IS id<input className="inp" value={site} onChange={e => setSite(e.target.value)} placeholder="e.g. lyon" /></label>
+          <label className="field">Vulnerability (for {'{cve}'} targets)<input className="inp" value={cve} onChange={e => setCve(e.target.value)} placeholder="e.g. CVE-2024-21887" /></label>
+        </div>
+        <label className="field">Assets hit, by name or Strata id, comma-separated<input className="inp" value={assets} onChange={e => setAssets(e.target.value)} placeholder="e.g. file-01, pc-acct-01" /></label>
+      </details>
       <div className="static-wrap" style={{ height: 220, borderRadius: 4, border: '1px solid var(--rule)' }}>
         {ver ? <StaticGraph g={ver.graph} label="Playbook preview" /> : <Loading label="Loading preview" />}
       </div>

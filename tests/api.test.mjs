@@ -170,6 +170,7 @@ test('incidents: declare, conflicting moves, tasks, SLA, close, report, PDF', as
   assert.equal(new TextDecoder().decode(pdf.data.slice(0, 5)), '%PDF-');
   const md = await a.get(`/api/reports/${rep.id}/markdown`);
   assert.match(md.data, /SLA performance/);
+  assert.doesNotMatch(md.data, /Assets hit/, 'an incident not linked to Strata has no Strata section');
   assert.equal((await a.patch(`/api/reports/${rep.id}`, { severity: 'Extreme' })).status, 400);
   assert.equal((await a.patch(`/api/reports/${rep.id}`, { severity: 'Low', summary: 'Edited' })).data.summary, 'Edited');
 });
@@ -302,4 +303,45 @@ test('password change: current password, strength, other sessions signed out', a
   assert.equal((await other.get('/api/playbooks')).status, 401, 'the other session is signed out');
   assert.equal((await login('first-password')).status, 401);
   assert.equal((await login('second-password')).status, 200);
+});
+
+test('Strata: an incident linked to the map, steps that point at it, and what Strata reports back', async () => {
+  const a = await as('analyst'), v = await as('viewer'), ed = await as('editor');
+  const pbs = (await a.get('/api/playbooks')).data;
+  const vuln = (await a.get(`/api/playbooks/${pbs.find(p => p.code === 'PB-010').id}`)).data;
+  // the shipped playbook points at the map
+  const found = vuln.versions.at(-1).graph.nodes.find(n => n.id === 'found');
+  assert.deepEqual(found.targets, ['vuln:{cve}']);
+  assert.deepEqual(found.effects, { Yes: ['suspected', 'vuln:{cve}'] });
+  // a declared incident keeps its link; a bad IS id is refused
+  assert.equal((await a.post('/api/incidents', { playbookId: vuln.id, name: 'x', strata: { site: 'bad id!' } })).status, 400);
+  const inc = (await a.post('/api/incidents', { playbookId: vuln.id, name: 'Ivanti', mode: 'exercise', speed: 60, strata: { site: 'lyon', assets: 'vpn-gw, , vpn-gw', params: { cve: 'CVE-2024-21887', 'bad key': 'x' } } })).data;
+  assert.deepEqual(inc.strata, { site: 'lyon', assets: ['vpn-gw'], params: { cve: 'CVE-2024-21887' }, marks: {}, names: {} });
+  const row = (await a.get('/api/incidents')).data.find(i => i.id === inc.id);
+  assert.deepEqual(row.strata, { site: 'lyon', assets: ['vpn-gw'], params: { cve: 'CVE-2024-21887' } });
+  // Strata reports the marks and what it did; unknown states are dropped; viewers cannot
+  assert.equal((await v.post(`/api/incidents/${inc.id}/strata`, { marks: {} })).status, 403);
+  const r = await a.post(`/api/incidents/${inc.id}/strata`, { marks: { 'lyo-vpn-gw': 'suspected', 'lyo-x': 'pwned' }, names: { 'lyo-vpn-gw': 'vpn-gw' }, log: [{ msg: 'vpn-gw marked suspected', kind: 'warn', by: 'alice' }] });
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  assert.deepEqual(r.data.strata.marks, { 'lyo-vpn-gw': 'suspected' });
+  assert.equal(r.data.strata.site, 'lyon', 'the rest of the link stays');
+  const last = r.data.log.at(-1);
+  assert.equal(last.msg, 'Strata: vpn-gw marked suspected');
+  assert.match(last.by, / \(alice\)$/, 'the Strata user is named after the account Strata signs in with');
+  // the report lists the assets as Strata reported them, in Markdown and in the PDF
+  await a.post(`/api/incidents/${inc.id}/stop`);
+  const rep = (await a.post(`/api/incidents/${inc.id}/report`)).data;
+  assert.deepEqual(rep.data.strata, { site: 'lyon', assets: [{ id: 'lyo-vpn-gw', name: 'vpn-gw', state: 'suspected' }] });
+  const md = (await a.get(`/api/reports/${rep.id}/markdown`)).data;
+  assert.match(md, /## \d\d Assets hit \(Strata\)/);
+  assert.match(md, /\| vpn-gw \| suspected \|/);
+  assert.equal((await a.get(`/api/reports/${rep.id}/pdf`)).status, 200);
+  // a draft with an unknown target is refused, a known one is kept
+  const p = (await ed.get(`/api/playbooks/${vuln.id}`)).data;
+  p.draft.nodes.find(n => n.id === 'exposure').targets = ['everything'];
+  assert.equal((await ed.put(`/api/playbooks/${vuln.id}/draft`, { graph: p.draft, rev: p.rev })).status, 400);
+  p.draft.nodes.find(n => n.id === 'exposure').targets = ['vuln:{cve}', 'flows:reach:id:vpn-gw', 'role:Admin bastion'];
+  assert.equal((await ed.put(`/api/playbooks/${vuln.id}/draft`, { graph: p.draft, rev: p.rev })).status, 200);
+  const yaml = (await ed.get(`/api/playbooks/${vuln.id}/yaml`)).data;
+  assert.match(yaml, /targets: \["vuln:\{cve\}", "flows:reach:id:vpn-gw", "role:Admin bastion"\]/);
 });

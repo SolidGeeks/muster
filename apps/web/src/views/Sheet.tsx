@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { ReactElement } from 'react';
 import type { Report, Template } from '@muster/core';
-import { fmtDur, fmtLong, fmtSla, fmtHM, fmtT, LOG_LABEL, reportStatusLabel } from '@muster/core';
+import { fmtDur, fmtLong, fmtSla, fmtHM, fmtT, LOG_LABEL, reportStatusLabel, reportSections } from '@muster/core';
 import { useNames } from '../lib';
 
 const safeAcc = (c: string) => (/^#[0-9a-f]{6}$/i.test(c || '') ? c : '#121413');
@@ -26,6 +26,11 @@ export function Sheet({ t, r }: { t: Template; r: Report }) {
       {withSla.length > 0 && <p className="rp-note">{met} of {withSla.length} SLAs met.</p>}
     </>) : <p className="rp-empty">No steps were completed.</p>,
     decisions: () => d.decisions.length ? <div className="rp-dec">{d.decisions.map((x, i) => <div key={i}><span>{x.q}</span><b>{x.a}</b><small>Led to {x.to}</small></div>)}</div> : <p className="rp-empty">No decisions recorded.</p>,
+    assets: () => d.strata?.assets.length ? (<>
+      <div className="tablewrap"><table className="rp-t"><thead><tr><th>Asset</th><th className="r">State</th></tr></thead>
+        <tbody>{d.strata.assets.map(a => <tr key={a.id}><td className="m">{a.name}</td><td className="r">{a.state === 'contained' ? <span className="st-ok">Contained</span> : <span className="st-br">{a.state === 'compromised' ? 'Compromised' : 'Suspected'}</span>}</td></tr>)}</tbody></table></div>
+      <p className="rp-note">Reported by Strata, IS {d.strata.site || '—'}.</p>
+    </>) : <p className="rp-empty">No asset marked on the map.</p>,
     notes: () => r.notes ? <Paras className="rp-body" text={r.notes} /> : <p className="rp-empty">No analyst notes.</p>,
     signoff: () => <div className="rp-sign">{[['Prepared by', N(r.author)], ['Reviewed by', ''], ['Approved by', '']].map(([k, v]) => <div key={k}><small>{k}</small><b>{v || ' '}</b><i /><small>Date</small></div>)}</div>
   };
@@ -43,7 +48,7 @@ export function Sheet({ t, r }: { t: Template; r: Report }) {
       <h1>{d.name}</h1>
       <div className="rp-sub">Incident report · {d.ref}{d.mode === 'exercise' ? ' (exercise)' : ''} · {d.pbCode} {d.pbName} v{d.v}</div>
       <div className="rp-meta">{meta.map(([k, v]) => <div key={k}><small>{k}</small><b>{v}</b></div>)}</div>
-      {t.sections.filter(s => s.on).map((s, i) => (
+      {reportSections(t, d).map((s, i) => (
         <section className="rp-sec" key={s.key}><h2><span>{String(i + 1).padStart(2, '0')}</span>{s.title}</h2>{sections[s.key]()}</section>
       ))}
       <div className="rp-foot"><span>{t.footer}</span><span className="m">{r.num}</span></div>

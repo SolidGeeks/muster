@@ -625,3 +625,13 @@ pre.yaml{margin:0;background:var(--wash);border:1px solid var(--rule);border-rad
 .cp-demo .bar{width:4px;align-self:stretch;border-radius:2px}
 .cp-demo span{font:500 12px var(--f-mono)}
 .cp-demo em{font:650 13px var(--f-ui);font-style:normal;color:#121413}
+
+/* Link to Strata */
+.strata-link{border:1px solid var(--rule);border-radius:4px;padding:8px 12px;margin:4px 0 12px}
+.strata-link summary{cursor:pointer;font-weight:600;font-size:13px}
+.strata-link[open] summary{margin-bottom:8px}
+.strata-b{padding:10px 16px;display:flex;flex-direction:column;gap:8px}
+.strata-assets{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.strata-assets li{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px}
+.strata-assets b{font-family:var(--f-mono,monospace);font-weight:500}
+.strata-link .row2{margin-top:8px}

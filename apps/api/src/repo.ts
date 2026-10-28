@@ -2,7 +2,7 @@
 import type { Store } from './db';
 import {
   type Playbook, type PlaybookSummary, type Graph, type Incident, type Report, type Template, type User, type Version,
-  diff, EMPTY_GRAPH, stepCodes, currentStep, incidentTime
+  diff, EMPTY_GRAPH, stepCodes, currentStep, incidentTime, withAllSections
 } from '@muster/core';
 
 /* ---------- Playbooks ---------- */
@@ -78,7 +78,8 @@ export function listIncidents(s: Store) {
       id: inc.id, ref: inc.ref, name: inc.name, pbCode: inc.pbCode, pbName: inc.pbName, v: inc.v, mode: inc.mode, severity: inc.severity,
       status: inc.status, startedAt: inc.startedAt, elapsed, createdBy: inc.createdBy, reportId: inc.reportId || null,
       current: node && inc.status === 'active' ? { code: codes[node.id], title: node.title, role: node.role, overdue: !!(node.sla && stepElapsed > node.sla * 60000) } : null,
-      speed: inc.clock.speed, rev: r.rev
+      speed: inc.clock.speed, rev: r.rev,
+      strata: inc.strata ? { site: inc.strata.site, assets: inc.strata.assets, params: inc.strata.params } : null
     };
   });
 }
@@ -106,12 +107,12 @@ export function listReports(s: Store) {
 /* ---------- Templates ---------- */
 
 export function listTemplates(s: Store): Template[] {
-  return s.all<any>('SELECT data, is_default FROM templates ORDER BY is_default DESC, position, id').map(r => ({ ...JSON.parse(r.data), isDefault: !!r.is_default }));
+  return s.all<any>('SELECT data, is_default FROM templates ORDER BY is_default DESC, position, id').map(r => withAllSections({ ...JSON.parse(r.data), isDefault: !!r.is_default }));
 }
 
 export function getTemplate(s: Store, id: string): Template | undefined {
   const r = s.get<any>('SELECT data, is_default FROM templates WHERE id = ?', id);
-  return r ? { ...JSON.parse(r.data), isDefault: !!r.is_default } : undefined;
+  return r ? withAllSections({ ...JSON.parse(r.data), isDefault: !!r.is_default }) : undefined;
 }
 
 export function defaultTemplate(s: Store): Template {

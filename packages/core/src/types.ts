@@ -16,6 +16,21 @@ export interface PNode {
   checklist: string[];
   x: number;
   y: number;
+  /** What the step acts on in Strata: selectors resolved on the map (affected, vuln:{cve}, flows:affected…). */
+  targets?: string[];
+  /** For a decision: answer → [state, selector], the assets Strata marks when that answer is given. */
+  effects?: Record<string, [StrataState, string]>;
+}
+
+export type StrataState = 'compromised' | 'suspected' | 'contained';
+/** Link to Strata: the IS, the assets the incident starts from, parameters for the targets, and the state of the assets as Strata reports it. */
+export interface StrataLink {
+  site: string;
+  assets: string[];
+  params: Record<string, string>;
+  marks: Record<string, StrataState>;
+  /** Asset id → name, as Strata knows it. */
+  names: Record<string, string>;
 }
 
 export interface PEdge {
@@ -113,6 +128,7 @@ export interface Incident {
   notes: string;
   reportId?: string | null;
   createdBy: string;
+  strata?: StrataLink | null;
 }
 
 export interface ReportStep {
@@ -140,6 +156,8 @@ export interface ReportData {
   decisions: { q: string; a: string; to: string }[];
   timeline: LogEntry[];
   notes: string;
+  /** The Strata IS and the assets as Strata last reported them; absent when the incident is not linked */
+  strata?: { site: string; assets: { id: string; name: string; state: StrataState }[] };
 }
 
 export interface Report {
@@ -155,7 +173,7 @@ export interface Report {
   data: ReportData;
 }
 
-export type SectionKey = 'summary' | 'timeline' | 'sla' | 'decisions' | 'notes' | 'signoff';
+export type SectionKey = 'summary' | 'timeline' | 'sla' | 'decisions' | 'assets' | 'notes' | 'signoff';
 
 export interface TemplateSection {
   key: SectionKey;
