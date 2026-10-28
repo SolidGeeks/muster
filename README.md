@@ -142,4 +142,4 @@ The hero film is made from code in `hero-film/`: `capture.mjs` takes real screen
 
 Muster is free software under the [GNU AGPL v3 or later](LICENSE): if you offer a modified version to users over a network, you must give them its source code.
 
-Contributions follow the [Solid standard](https://github.com/SolidGeeks/.github/blob/main/CONTRIBUTING.md): sign off every commit with `git commit -s` (DCO), no CLA. To report a vulnerability, see [SECURITY.md](SECURITY.md).
+Contributions follow the [Solid standard](https://github.com/SolidGeeks/.github/blob/main/CONTRIBUTING.md): sign off every commit with `git commit -s` (DCO), no CLA. Start your branch from the current `main`: the `base` job of the CI fails when a pull request does not include the latest release (`v…` tag), and says how to update it. To report a vulnerability, see [SECURITY.md](SECURITY.md).
